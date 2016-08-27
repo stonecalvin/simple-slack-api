@@ -6,9 +6,11 @@ import com.ullink.slack.simpleslackapi.listeners.SlackConnectedListener;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class TestAbstractSlackSessionImpl
 {
@@ -126,13 +128,13 @@ public class TestAbstractSlackSessionImpl
         public void refetchUsers() {}
 
         @Override
-        public SlackMessageHandle inviteUser(String email, String firstName, boolean setActive) 
+        public SlackMessageHandle inviteUser(String email, String firstName, boolean setActive)
         {
             return null;
         }
 
         // Helper method with access to abstract class properties.
-        public boolean isListening(SlackConnectedListener expectedListener) 
+        public boolean isListening(SlackConnectedListener expectedListener)
         {
           return slackConnectedListener.contains(expectedListener);
         }
@@ -152,7 +154,7 @@ public class TestAbstractSlackSessionImpl
         {
           return null;
         }
-        
+
         @Override
         public SlackMessageHandle<GenericSlackReply> postGenericSlackCommand(java.util.Map<String,String> params, String command) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -186,8 +188,9 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        assertThat(slackSession.findChannelByName("testchannel1")).isNotNull();
-        assertThat(slackSession.findChannelByName("testchannel1").getId()).isEqualTo("channelid1");
+        Optional<SlackChannel> channel = slackSession.findChannelByName("testchannel1");
+        assertThat(channel.isPresent()).isTrue();
+        assertThat(channel.get().getId()).isEqualTo("channelid1");
     }
 
     @Test
@@ -270,8 +273,8 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        assertThat(slackSession.findUserByUserName("username1")).isNotNull();
-        assertThat(slackSession.findUserByUserName("username1").getId()).isEqualTo("userid1");
+        assertThat(slackSession.findUserByUserName("username1").isPresent()).isTrue();
+        assertThat(slackSession.findUserByUserName("username1").get().getId()).isEqualTo("userid1");
     }
 
     @Test
@@ -281,7 +284,7 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        assertThat(slackSession.findUserByUserName("unknownuser")).isNull();
+        assertThat(slackSession.findUserByUserName("unknownuser").isPresent()).isFalse();
     }
 
     @Test

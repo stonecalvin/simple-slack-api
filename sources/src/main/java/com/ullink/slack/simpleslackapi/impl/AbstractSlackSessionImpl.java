@@ -5,6 +5,7 @@ import com.ullink.slack.simpleslackapi.listeners.*;
 import com.ullink.slack.simpleslackapi.replies.SlackMessageReply;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 abstract class AbstractSlackSessionImpl implements SlackSession
 {
@@ -63,30 +64,17 @@ abstract class AbstractSlackSessionImpl implements SlackSession
 
     @Override
     @Deprecated
-    public Collection<SlackBot> getBots()
-    {
-        ArrayList<SlackBot> toReturn = new ArrayList<>();
-        for (SlackUser user : users.values())
-        {
-            if (user.isBot())
-            {
-                toReturn.add(user);
-            }
-        }
-        return toReturn;
+    public Collection<SlackBot> getBots() {
+        return users.values().stream()
+                .filter(SlackUser::isBot)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public SlackChannel findChannelByName(String channelName)
-    {
-        for (SlackChannel channel : channels.values())
-        {
-            if (channelName.equals(channel.getName()))
-            {
-                return channel;
-            }
-        }
-        return null;
+    public Optional<SlackChannel> findChannelByName(String channelName) {
+        return channels.values().stream()
+                .filter(channel -> channel.getName().equals(channelName))
+                .findFirst();
     }
 
     @Override
@@ -111,16 +99,10 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public SlackUser findUserByUserName(String userName)
-    {
-        for (SlackUser user : users.values())
-        {
-            if (userName.equals(user.getUserName()))
-            {
-                return user;
-            }
-        }
-        return null;
+    public Optional<SlackUser> findUserByUserName(String userName) {
+        return users.values().stream()
+                .filter(user -> user.getUserName().equals(userName))
+                .findFirst();
     }
 
     @Override

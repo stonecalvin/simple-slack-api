@@ -7,9 +7,11 @@ import com.ullink.slack.simpleslackapi.replies.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public interface SlackSession {
+    void registerListener(Object listener);
 
     SlackTeam getTeam();
 
@@ -21,7 +23,7 @@ public interface SlackSession {
 
     Collection<SlackIntegration> getIntegrations();
 
-    SlackChannel findChannelByName(String channelName);
+    Optional<SlackChannel> findChannelByName(String channelName);
 
     SlackChannel findChannelById(String channelId);
 
@@ -29,7 +31,7 @@ public interface SlackSession {
 
     SlackUser findUserById(String userId);
 
-    SlackUser findUserByUserName(String userName);
+    Optional<SlackUser> findUserByUserName(String userName);
 
     SlackUser findUserByEmail(String userMail);
 
@@ -41,7 +43,7 @@ public interface SlackSession {
 
     @Deprecated
     SlackBot findBotById(String botId);
-    
+
 
     SlackMessageHandle<ParsedSlackReply> inviteUser(String email, String firstName, boolean setActive);
 
@@ -70,9 +72,9 @@ public interface SlackSession {
     SlackMessageHandle<SlackMessageReply> sendFile(SlackChannel channel, byte [] data, String fileName);
 
     SlackMessageHandle<SlackMessageReply> sendMessageToUser(SlackUser user, String message, SlackAttachment attachment);
-    
+
     SlackMessageHandle<SlackMessageReply> sendMessageToUser(String userName, String message, SlackAttachment attachment);
-    
+
     SlackMessageHandle<SlackMessageReply> updateMessage(String timeStamp, SlackChannel channel, String message);
 
     SlackMessageHandle<SlackMessageReply> sendMessageOverWebSocket(SlackChannel channel, String message);
@@ -84,9 +86,9 @@ public interface SlackSession {
     SlackMessageHandle<SlackChannelReply> joinChannel(String channelName);
 
     SlackMessageHandle<SlackChannelReply> leaveChannel(SlackChannel channel);
-    
+
     SlackMessageHandle<SlackChannelReply> inviteToChannel(SlackChannel channel, SlackUser user);
-    
+
     SlackMessageHandle<ParsedSlackReply> archiveChannel(SlackChannel channel);
 
     SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(SlackUser user);
@@ -150,13 +152,13 @@ public interface SlackSession {
      * Subscribe to events related to the actions to the slack
      * server. At this time a set of status information is exchanged that
      * is useful to implementing bots.
-     * 
+     *
      * For example, the current user that is connecting.
      * knowing your own user id will help you stop answering your own
      * questions.
      */
     void addSlackConnectedListener(SlackConnectedListener listner);
-    
+
     void removeSlackConnectedListener(SlackConnectedListener listener);
 
     void addSlackDisconnectedListener(SlackDisconnectedListener listener);
@@ -164,17 +166,17 @@ public interface SlackSession {
     void removeSlackDisconnectedListener(SlackDisconnectedListener listener);
 
     /**
-     * 
+     *
      * @return true if actions is open
      */
     boolean isConnected();
-    
+
     void addReactionAddedListener(ReactionAddedListener listener);
-    
+
     void removeReactionAddedListener(ReactionAddedListener listener);
-    
+
     void addReactionRemovedListener(ReactionRemovedListener listener);
-    
+
     void removeReactionRemovedListener(ReactionRemovedListener listener);
 
     void addSlackUserChangeListener(SlackUserChangeListener listener);
@@ -190,7 +192,7 @@ public interface SlackSession {
     void removePresenceChangeListener(PresenceChangeListener listener);
 
     void addPinRemovedListener(PinRemovedListener listener);
-  
+
     void removePinRemovedListener(PinRemovedListener listener);
 
     long getHeartbeat();

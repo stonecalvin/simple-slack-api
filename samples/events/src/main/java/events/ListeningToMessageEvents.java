@@ -6,6 +6,8 @@ import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 
+import java.util.Optional;
+
 /**
  * Samples showing how to listen to message events
  */
@@ -47,17 +49,19 @@ public class ListeningToMessageEvents
             {
                 // if I'm only interested on a certain channel :
                 // I can filter out messages coming from other channels
-                SlackChannel theChannel = session1.findChannelByName("thechannel");
+                Optional<SlackChannel> theChannel = session1.findChannelByName("thechannel");
 
-                if (!theChannel.getId().equals(event.getChannel().getId())) {
+                if (!theChannel.isPresent()
+                    || !theChannel.get().getId().equals(event.getChannel().getId())) {
                     return;
                 }
 
                 // if I'm only interested on messages posted by a certain user :
                 // I can filter out messages coming from other users
-                SlackUser myInterestingUser = session1.findUserByUserName("gueststar");
+                Optional<SlackUser> myInterestingUser = session1.findUserByUserName("gueststar");
 
-                if (!myInterestingUser.getId().equals(event.getSender())) {
+                if (!myInterestingUser.isPresent()
+                    || !myInterestingUser.get().getId().equals(event.getSender().getId())) {
                     return;
                 }
 

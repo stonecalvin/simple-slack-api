@@ -3,6 +3,8 @@ package actions;
 import com.ullink.slack.simpleslackapi.*;
 import com.ullink.slack.simpleslackapi.replies.SlackChannelReply;
 
+import java.util.Optional;
+
 /**
  * This sample code is showing how to send some messages assuming you already have a SlackSession
  */
@@ -16,9 +18,11 @@ public class SendingMessages
     {
 
         //get a channel
-        SlackChannel channel = session.findChannelByName("achannel");
+        Optional<SlackChannel> channel = session.findChannelByName("achannel");
 
-        session.sendMessage(channel, "Hey there");
+        if (channel.isPresent()) {
+            session.sendMessage(channel.get(), "Hey there");
+        }
     }
 
     /**
@@ -28,10 +32,14 @@ public class SendingMessages
     {
 
         //get a user
-        SlackUser user = session.findUserByUserName("killroy");
+        Optional<SlackUser> user = session.findUserByUserName("killroy");
 
-        session.sendMessageToUser(user, "Hi, how are you", null);
+        if (!user.isPresent()) {
+            // Could not find a user with the given name, do some sort of error handling
+            return;
+        }
 
+        session.sendMessageToUser(user.get(), "Hi, how are you", null);
     }
 
     /**
@@ -42,10 +50,15 @@ public class SendingMessages
     {
 
         //get a user
-        SlackUser user = session.findUserByUserName("killroy");
+        Optional<SlackUser> user = session.findUserByUserName("killroy");
+
+        if (!user.isPresent()) {
+            // Could not find a user with the given name, do some sort of error handling
+            return;
+        }
 
         //get its direct message channel
-        SlackMessageHandle<SlackChannelReply> reply = session.openDirectMessageChannel(user);
+        SlackMessageHandle<SlackChannelReply> reply = session.openDirectMessageChannel(user.get());
 
         //get the channel
         SlackChannel channel = reply.getReply().getSlackChannel();
@@ -59,11 +72,11 @@ public class SendingMessages
      */
     public void sendDirectMessageToMultipleUsers(SlackSession session)
     {
-
         //get some users
-        SlackUser killroy = session.findUserByUserName("killroy");
-        SlackUser janedoe = session.findUserByUserName("janedoe");
-        SlackUser agentsmith = session.findUserByUserName("agentsmith");
+        // For this example, we will ignore the fact that these users may not actually exist.
+        SlackUser killroy = session.findUserByUserName("killroy").get();
+        SlackUser janedoe = session.findUserByUserName("janedoe").get();
+        SlackUser agentsmith = session.findUserByUserName("agentsmith").get();
 
         //open a multiparty direct message channel between the bot and these users
         SlackMessageHandle<SlackChannelReply> reply = session.openMultipartyDirectMessageChannel(killroy, janedoe, agentsmith);
@@ -81,7 +94,13 @@ public class SendingMessages
     public void sendUsingPreparedMessage(SlackSession session)
     {
         //get a channel
-        SlackChannel channel = session.findChannelByName("achannel");
+        Optional<SlackChannel> channel = session.findChannelByName("achannel");
+
+        if (!channel.isPresent()) {
+            // We were unable to find a channel with the given name.
+            // Some sort of error handling happens here
+            return;
+        }
 
         //build a message object
         SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
@@ -91,6 +110,6 @@ public class SendingMessages
                 .addAttachment(new SlackAttachment())
                 .build();
 
-        session.sendMessage(channel, preparedMessage);
+        session.sendMessage(channel.get(), preparedMessage);
     }
 }
