@@ -2,14 +2,17 @@ package com.ullink.slack.simpleslackapi.events;
 
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackUser;
+import org.immutables.value.Value;
 
-public interface ReactionRemoved extends SlackEvent {
+import java.util.Optional;
 
-    String getEmojiName();
-    SlackChannel getChannel();
-    SlackUser getUser();
-    String getMessageID();
-    String getFileID();
-    String getFileCommentID();
-  
+@Value.Immutable
+public interface ReactionRemoved extends SlackEvent{
+    SlackChannel channel();
+    SlackUser user();
+    String messageID();
+    String emojiName();
+
+    Optional<String> fileID();
+    Optional<String> fileCommentID();
 }

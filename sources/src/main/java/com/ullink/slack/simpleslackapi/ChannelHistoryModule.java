@@ -1,26 +1,27 @@
 package com.ullink.slack.simpleslackapi;
 
-import java.util.List;
+import com.ullink.slack.simpleslackapi.events.MessagePosted;
 import org.threeten.bp.LocalDate;
-import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
+
+import java.util.List;
 
 public interface ChannelHistoryModule {
-    
-    List<SlackMessagePosted> fetchHistoryOfChannel(String channelName);
 
-    List<SlackMessagePosted> fetchHistoryOfChannel(String channelName, LocalDate day);
+    List<MessagePosted> fetchHistoryOfChannel(String channelName);
 
-    List<SlackMessagePosted> fetchHistoryOfChannel(String channelName, int numberOfMessages);
+    List<MessagePosted> fetchHistoryOfChannel(String channelName, LocalDate day);
 
-    List<SlackMessagePosted> fetchHistoryOfChannel(String channelName, LocalDate day, int numberOfMessages);
+    List<MessagePosted> fetchHistoryOfChannel(String channelName, int numberOfMessages);
 
-    List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId);
-    
-    List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day);
+    List<MessagePosted> fetchHistoryOfChannel(String channelName, LocalDate day, int numberOfMessages);
 
-    List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, int numberOfMessages);
+    List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId);
 
-    List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages);
+    List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day);
 
-    
+    List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, int numberOfMessages);
+
+    List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages);
+
+
 }

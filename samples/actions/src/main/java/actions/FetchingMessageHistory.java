@@ -3,7 +3,7 @@ package actions;
 import com.ullink.slack.simpleslackapi.ChannelHistoryModule;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
-import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
+import com.ullink.slack.simpleslackapi.events.MessagePosted;
 import com.ullink.slack.simpleslackapi.impl.ChannelHistoryModuleFactory;
 import org.threeten.bp.LocalDate;
 
@@ -22,7 +22,7 @@ public class FetchingMessageHistory
         //build a channelHistory module from the slack session
         ChannelHistoryModule channelHistoryModule = ChannelHistoryModuleFactory.createChannelHistoryModule(session);
 
-        List<SlackMessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId());
+        List<MessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId());
     }
 
     /**
@@ -33,7 +33,7 @@ public class FetchingMessageHistory
         //build a channelHistory module from the slack session
         ChannelHistoryModule channelHistoryModule = ChannelHistoryModuleFactory.createChannelHistoryModule(session);
 
-        List<SlackMessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),10);
+        List<MessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),10);
     }
 
     /**
@@ -44,7 +44,7 @@ public class FetchingMessageHistory
         //build a channelHistory module from the slack session
         ChannelHistoryModule channelHistoryModule = ChannelHistoryModuleFactory.createChannelHistoryModule(session);
 
-        List<SlackMessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),date);
+        List<MessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),date);
     }
 
     /**
@@ -55,7 +55,7 @@ public class FetchingMessageHistory
         //build a channelHistory module from the slack session
         ChannelHistoryModule channelHistoryModule = ChannelHistoryModuleFactory.createChannelHistoryModule(session);
 
-        List<SlackMessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),date,10);
+        List<MessagePosted> messages = channelHistoryModule.fetchHistoryOfChannel(slackChannel.getId(),date,10);
     }
 
 }

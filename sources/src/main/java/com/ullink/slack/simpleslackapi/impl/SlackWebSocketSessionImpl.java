@@ -1,13 +1,9 @@
 package com.ullink.slack.simpleslackapi.impl;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.io.CharStreams;
 import com.ullink.slack.simpleslackapi.*;
-import com.ullink.slack.simpleslackapi.events.*;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration.Avatar;
-import com.ullink.slack.simpleslackapi.listeners.SlackEventListener;
-import com.ullink.slack.simpleslackapi.newEvents.ConnectedEvent;
-import com.ullink.slack.simpleslackapi.newEvents.ImmutableConnectedEvent;
+import com.ullink.slack.simpleslackapi.events.*;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -84,84 +80,7 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
     private boolean wantDisconnect;
 
     private Thread connectionMonitoringThread;
-    private EventDispatcher dispatcher = new EventDispatcher();
     private long heartbeat;
-
-
-    // TODO: Redo me in Observable framework?? Dont forget this is an api, we dont want to force others to use 3rd party libraries
-    public EventBus eventBus = new EventBus("SlackJavaApiEventBus");
-    public class EventDispatcher {
-
-        void dispatch(SlackEvent event) {
-            switch (event.getEventType()) {
-                case SLACK_CHANNEL_ARCHIVED:
-                    dispatchImpl((SlackChannelArchived) event, channelArchiveListener);
-                    break;
-                case SLACK_CHANNEL_CREATED:
-                    dispatchImpl((SlackChannelCreated) event, channelCreateListener);
-                    break;
-                case SLACK_CHANNEL_DELETED:
-                    dispatchImpl((SlackChannelDeleted) event, channelDeleteListener);
-                    break;
-                case SLACK_CHANNEL_RENAMED:
-                    dispatchImpl((SlackChannelRenamed) event, channelRenamedListener);
-                    break;
-                case SLACK_CHANNEL_UNARCHIVED:
-                    dispatchImpl((SlackChannelUnarchived) event, channelUnarchiveListener);
-                    break;
-                case SLACK_CHANNEL_JOINED:
-                    dispatchImpl((SlackChannelJoined) event, channelJoinedListener);
-                    break;
-                case SLACK_CHANNEL_LEFT:
-                    dispatchImpl((SlackChannelLeft) event, channelLeftListener);
-                    break;
-                case SLACK_GROUP_JOINED:
-                    dispatchImpl((SlackGroupJoined) event, groupJoinedListener);
-                    break;
-                case SLACK_MESSAGE_DELETED:
-                    dispatchImpl((SlackMessageDeleted) event, messageDeletedListener);
-                    break;
-                case SLACK_MESSAGE_POSTED:
-                    dispatchImpl((SlackMessagePosted) event, messagePostedListener);
-                    break;
-                case SLACK_MESSAGE_UPDATED:
-                    dispatchImpl((SlackMessageUpdated) event, messageUpdatedListener);
-                    break;
-                case SLACK_CONNECTED:
-                    dispatchImpl((SlackConnected) event, slackConnectedListener);
-                    break;
-                case REACTION_ADDED:
-                    dispatchImpl((ReactionAdded) event, reactionAddedListener);
-                    break;
-                case REACTION_REMOVED:
-                    dispatchImpl((ReactionRemoved) event, reactionRemovedListener);
-                    break;
-                case SLACK_USER_CHANGE:
-                    dispatchImpl((SlackUserChange) event, slackUserChangeListener);
-                    break;
-                case PIN_ADDED:
-                    dispatchImpl((PinAdded) event, pinAddedListener);
-                    break;
-                case PIN_REMOVED:
-                    dispatchImpl((PinRemoved) event, pinRemovedListener);
-                    break;
-                case PRESENCE_CHANGE:
-                    dispatchImpl((PresenceChange) event, presenceChangeListener);
-                    break;
-                case SLACK_DISCONNECTED:
-                    dispatchImpl((SlackDisconnected) event, slackDisconnectedListener);
-                    break;
-                case UNKNOWN:
-                    throw new IllegalArgumentException("event not handled " + event);
-            }
-        }
-
-        private <E extends SlackEvent, L extends SlackEventListener<E>> void dispatchImpl(E event, List<L> listeners) {
-            for (L listener : listeners) {
-                listener.onEvent(event, SlackWebSocketSessionImpl.this);
-            }
-        }
-    }
 
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -279,11 +198,7 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
 
         // If we have successfully established a connection...
         if (websocketSession != null) {
-            // Create a slack connection impl whose whole purpose seems to be to store a session persona in a way that
-            // can fit with the event dispatcher? That seems dumb, this should probably use Observable.
-            SlackConnectedImpl slackConnectedImpl = new SlackConnectedImpl(sessionPersona);
-            dispatcher.dispatch(slackConnectedImpl);
-            eventBus.post(ImmutableConnectedEvent.builder()
+            eventBus.post(ImmutableConnected.builder()
                     .slackPersona(sessionPersona)
                     .slackSession(SlackWebSocketSessionImpl.this)
                     .build());
@@ -291,11 +206,6 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
             LOGGER.debug("websocket actions established");
             LOGGER.info("slack session ready");
         }
-    }
-
-    @Override
-    public void registerListener(Object listener) {
-        eventBus.register(listener);
     }
 
     private void disconnectImpl() {
@@ -307,8 +217,10 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
                 // ignored.
             }
             finally {
-                SlackDisconnectedImpl slackDisconnected = new SlackDisconnectedImpl(sessionPersona);
-                dispatcher.dispatch(slackDisconnected);
+                eventBus.post(ImmutableDisconnected.builder()
+                        .slackPersona(sessionPersona)
+                        .slackSession(SlackWebSocketSessionImpl.this)
+                        .build());
                 websocketSession = null;
             }
         }
@@ -497,22 +409,22 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> deleteMessage(String timeStamp, SlackChannel channel) {
+    public SlackMessageHandle<SlackMessageReply> deleteMessage(String timestamp, SlackChannel channel) {
         SlackMessageHandleImpl<SlackMessageReply> handle = new SlackMessageHandleImpl<>(getNextMessageId());
         Map<String, String> arguments = new HashMap<>();
         arguments.put("token", authToken);
         arguments.put("channel", channel.getId());
-        arguments.put("ts", timeStamp);
+        arguments.put("ts", timestamp);
         postSlackCommand(arguments, CHAT_DELETE_COMMAND, handle);
         return handle;
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> updateMessage(String timeStamp, SlackChannel channel, String message) {
+    public SlackMessageHandle<SlackMessageReply> updateMessage(String timestamp, SlackChannel channel, String message) {
         SlackMessageHandleImpl<SlackMessageReply> handle = new SlackMessageHandleImpl<>(getNextMessageId());
         Map<String, String> arguments = new HashMap<>();
         arguments.put("token", authToken);
-        arguments.put("ts", timeStamp);
+        arguments.put("ts", timestamp);
         arguments.put("channel", channel.getId());
         arguments.put("text", message);
         postSlackCommand(arguments, CHAT_UPDATE_COMMAND, handle);
@@ -850,22 +762,25 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
         else {
             JSONObject object = parseObject(message);
             SlackEvent slackEvent = SlackJSONMessageParser.decode(this, object);
-            if (slackEvent instanceof SlackChannelCreated)
+            if (slackEvent instanceof ChannelCreated)
             {
-                SlackChannelCreated slackChannelCreated = (SlackChannelCreated) slackEvent;
-                channels.put(slackChannelCreated.getSlackChannel().getId(), slackChannelCreated.getSlackChannel());
+                ChannelCreated channelCreatedEvent = (ChannelCreated) slackEvent;
+
+                channels.put(channelCreatedEvent.channel().getId(), channelCreatedEvent.channel());
             }
-            if (slackEvent instanceof SlackGroupJoined)
+            if (slackEvent instanceof GroupJoined)
             {
-                SlackGroupJoined slackGroupJoined = (SlackGroupJoined) slackEvent;
-                channels.put(slackGroupJoined.getSlackChannel().getId(), slackGroupJoined.getSlackChannel());
+                GroupJoined groupJoinedEvent = (GroupJoined) slackEvent;
+                channels.put(groupJoinedEvent.channel().getId(), groupJoinedEvent.channel());
             }
-            if (slackEvent instanceof SlackUserChange)
+            if (slackEvent instanceof UserChange)
             {
-                SlackUserChange slackUserChange = (SlackUserChange) slackEvent;
-                users.put(slackUserChange.getUser().getId(), slackUserChange.getUser());
+                UserChange userChange = (UserChange) slackEvent;
+                users.put(userChange.user().getId(), userChange.user());
             }
-            dispatcher.dispatch(slackEvent);
+
+            // TODO: Need to make sure event bus does what I want here
+            eventBus.post(slackEvent);
         }
     }
 

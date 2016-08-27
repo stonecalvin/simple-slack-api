@@ -32,7 +32,7 @@ public enum EventType
         }
     }
 
-    private String                              code;
+    private String code;
 
     public static EventType getByCode(String code)
     {

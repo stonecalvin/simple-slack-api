@@ -3,7 +3,8 @@ package com.ullink.slack.simpleslackapi.samples.connection;
 import com.google.common.eventbus.Subscribe;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
-import com.ullink.slack.simpleslackapi.newEvents.ConnectedEvent;
+import com.ullink.slack.simpleslackapi.events.Connected;
+import com.ullink.slack.simpleslackapi.events.MessagePosted;
 
 import java.io.IOException;
 
@@ -11,9 +12,16 @@ import java.io.IOException;
 class TestListener {
     String username;
     @Subscribe
-    public void listen(ConnectedEvent event) {
+    public void listenConnected(Connected event) {
         username = event.slackPersona().getUserName();
+        System.out.println("USER HAS CONNECTED: " + username);
     }
+
+    @Subscribe
+    public void listenMessagePosted(MessagePosted event) {
+        System.out.println("MESSAGE POSTED: " + event.messageContent());
+    }
+
 }
 
 /**

@@ -1,8 +1,6 @@
 package com.ullink.slack.simpleslackapi.impl;
 
 import com.ullink.slack.simpleslackapi.*;
-import com.ullink.slack.simpleslackapi.events.SlackConnected;
-import com.ullink.slack.simpleslackapi.listeners.SlackConnectedListener;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.junit.Test;
 
@@ -10,7 +8,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 public class TestAbstractSlackSessionImpl
 {
@@ -62,7 +59,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle deleteMessage(String timeStamp, SlackChannel channel)
+        public SlackMessageHandle deleteMessage(String timestamp, SlackChannel channel)
         {
             return null;
         }
@@ -79,7 +76,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle updateMessage(String timeStamp, SlackChannel channel, String message)
+        public SlackMessageHandle updateMessage(String timestamp, SlackChannel channel, String message)
         {
             return null;
         }
@@ -131,12 +128,6 @@ public class TestAbstractSlackSessionImpl
         public SlackMessageHandle inviteUser(String email, String firstName, boolean setActive)
         {
             return null;
-        }
-
-        // Helper method with access to abstract class properties.
-        public boolean isListening(SlackConnectedListener expectedListener)
-        {
-          return slackConnectedListener.contains(expectedListener);
         }
 
         @Override
@@ -200,7 +191,7 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        assertThat(slackSession.findChannelByName("unknownChannel")).isNull();
+        assertThat(slackSession.findChannelByName("unknownChannel").isPresent()).isFalse();
     }
 
     @Test
@@ -221,7 +212,7 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        assertThat(slackSession.findChannelByName("unknownChannel")).isNull();
+        assertThat(slackSession.findChannelByName("unknownChannel").isPresent()).isFalse();
     }
 
     @Test
@@ -285,34 +276,5 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findUserByUserName("unknownuser").isPresent()).isFalse();
-    }
-
-    @Test
-    public void testAddConnectedListener() {
-        SlackConnectedListener listener = new SlackConnectedListener() {
-          @Override
-          public void onEvent(SlackConnected event, SlackSession session) {
-          }
-        };
-
-        TestSlackSessionImpl slackSession = new TestSlackSessionImpl();
-        slackSession.addSlackConnectedListener(listener);
-
-        assertThat(slackSession.isListening(listener)).isTrue();
-    }
-
-    @Test
-    public void testRemoveConnectedListener() {
-        SlackConnectedListener listener = new SlackConnectedListener() {
-          @Override
-          public void onEvent(SlackConnected event, SlackSession session) {
-          }
-        };
-
-        TestSlackSessionImpl slackSession = new TestSlackSessionImpl();
-        slackSession.addSlackConnectedListener(listener);
-        slackSession.removeSlackConnectedListener(listener);
-
-        assertThat(slackSession.isListening(listener)).isFalse();
     }
 }

@@ -1,16 +1,7 @@
 package com.ullink.slack.simpleslackapi.events;
 
+import com.ullink.slack.simpleslackapi.SlackSession;
+
 public interface SlackEvent {
-
-    SlackEvent UNKNOWN_EVENT = new SlackEvent()
-    {
-
-        @Override
-        public SlackEventType getEventType()
-        {
-            return SlackEventType.UNKNOWN;
-        }
-    };
-    
-    SlackEventType getEventType();
+    SlackSession slackSession();
 }

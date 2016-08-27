@@ -1,19 +1,17 @@
 package com.ullink.slack.simpleslackapi.events;
 
+import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackChannel;
-import com.ullink.slack.simpleslackapi.SlackFile;
-import com.ullink.slack.simpleslackapi.SlackUser;
 import org.immutables.value.Value;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Value.Immutable
-public interface PinRemoved extends SlackEvent {
-    SlackUser sender();
+public interface MessageUpdated extends MessageEvent {
     SlackChannel channel();
-    String timestamp();
+    String messageTimestamp();
     String message();
 
-    Optional<SlackFile> file();
-
+    Optional<ArrayList<SlackAttachment>> attachments();
 }
