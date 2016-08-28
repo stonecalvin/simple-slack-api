@@ -1,7 +1,7 @@
 package com.ullink.slack.simpleslackapi.events;
 
-import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.json.Channel;
 
 public interface ChannelEvent extends SlackEvent {
-    SlackChannel channel();
+    Channel channel();
 }

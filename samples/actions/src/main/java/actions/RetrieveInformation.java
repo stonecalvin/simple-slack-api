@@ -1,8 +1,8 @@
 package actions;
 
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
+import com.ullink.slack.simpleslackapi.json.Channel;
 import com.ullink.slack.simpleslackapi.replies.EmojiSlackReply;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ public class RetrieveInformation {
     /**
      * Demonstrates how to fetch glorious emoji.
      */
-    public void fetchListOfEmoji(SlackSession session, SlackChannel slackChannel) {
+    public void fetchListOfEmoji(SlackSession session, Channel slackChannel) {
         SlackMessageHandle<EmojiSlackReply> handle = session.listEmoji();
         Map<String, String> emojis = handle.getReply().getEmojis();
 

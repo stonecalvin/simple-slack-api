@@ -2,12 +2,12 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.eventbus.Subscribe;
 import com.ullink.slack.simpleslackapi.ChannelHistoryModule;
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.MessagePosted;
 import com.ullink.slack.simpleslackapi.events.ReactionAdded;
 import com.ullink.slack.simpleslackapi.events.ReactionRemoved;
+import com.ullink.slack.simpleslackapi.json.Channel;
 import com.ullink.slack.simpleslackapi.replies.GenericSlackReply;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,7 +16,10 @@ import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
 
@@ -60,8 +63,8 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         } else {
             params.put("count", String.valueOf(DEFAULT_HISTORY_FETCH_SIZE));
         }
-        SlackChannel channel =session.findChannelById(channelId);
-        switch (channel.getType()) {
+        Channel channel = session.findChannelById(channelId);
+        switch (channel.type()) {
             case INSTANT_MESSAGING:
                 return fetchHistoryOfChannel(params,FETCH_IM_HISTORY_COMMAND);
             case PRIVATE_GROUP:

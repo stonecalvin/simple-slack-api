@@ -1,13 +1,10 @@
 package com.ullink.slack.simpleslackapi.impl;
 
-import com.ullink.slack.simpleslackapi.SlackIntegration;
-import com.ullink.slack.simpleslackapi.SlackPersona;
-import com.ullink.slack.simpleslackapi.SlackTeam;
-import com.ullink.slack.simpleslackapi.SlackUser;
-import org.json.simple.JSONArray;
+import com.ullink.slack.simpleslackapi.json.*;
 import org.json.simple.JSONObject;
 
 import java.util.Map;
+import java.util.Optional;
 
 class SlackJSONParsingUtils {
 
@@ -15,7 +12,7 @@ class SlackJSONParsingUtils {
         // Helper class
     }
 
-    static final SlackUser buildSlackUser(JSONObject jsonUser)
+    static final User buildSlackUser(JSONObject jsonUser)
     {
         String id = (String) jsonUser.get("id"); //userSkype, userTitle, userPhone
         String name = (String) jsonUser.get("name");
@@ -44,16 +41,40 @@ class SlackJSONParsingUtils {
         }
 
         String presence = (String) jsonUser.get("presence");
-        SlackPersona.SlackPresence slackPresence = SlackPersona.SlackPresence.UNKNOWN;
+        Presence slackPresence = Presence.UNKNOWN;
         if ("active".equals(presence))
         {
-            slackPresence = SlackPersona.SlackPresence.ACTIVE;
+            slackPresence = Presence.ACTIVE;
         }
         if ("away".equals(presence))
         {
-            slackPresence = SlackPersona.SlackPresence.AWAY;
+            slackPresence = Presence.AWAY;
         }
-        return new SlackUserImpl(id, name, realName, email, skype, title, phone, deleted, admin, owner, primaryOwner, restricted, ultraRestricted, bot, tz, tzLabel, tzOffset == null ? null : new Integer(tzOffset.intValue()), slackPresence);
+
+        // TODO: Gson this...
+        Profile profile = ImmutableProfile.builder()
+                .email(Optional.ofNullable(email))
+                .phone(Optional.ofNullable(phone))
+                .skype(Optional.ofNullable(skype))
+                .title(Optional.ofNullable(title))
+                .build();
+        return ImmutableUser.builder()
+                .id(id)
+                .name(name)
+                .realName(Optional.ofNullable(realName))
+                .profile(profile)
+                .deleted(deleted)
+                .admin(admin)
+                .owner(owner)
+                .primaryOwner(primaryOwner)
+                .restricted(restricted)
+                .ultraRestricted(ultraRestricted)
+                .bot(bot)
+                .tz(Optional.ofNullable(tz))
+                .tzLabel(Optional.ofNullable(tzLabel))
+                .tzOffset(Optional.ofNullable(tzOffset == null ? null : Long.valueOf(tzOffset.intValue())))
+                .presence(slackPresence)
+                .build();
     }
 
     private static Boolean ifNullFalse(JSONObject jsonUser, String field) {
@@ -64,7 +85,7 @@ class SlackJSONParsingUtils {
         return deleted;
     }
 
-    static final SlackChannelImpl buildSlackChannel(JSONObject jsonChannel, Map<String, SlackUser> knownUsersById) {
+    static final Channel buildSlackChannel(JSONObject jsonChannel, Map<String, User> knownUsersById) {
         String id = (String) jsonChannel.get("id");
         String name = (String) jsonChannel.get("name");
 
@@ -85,38 +106,43 @@ class SlackJSONParsingUtils {
             isMember = (boolean)jsonChannel.get("is_member");
         }
 
-        SlackChannelImpl toReturn = new SlackChannelImpl(id, name, topic, purpose, false, isMember);
-        JSONArray membersJson = (JSONArray) jsonChannel.get("members");
-        if (membersJson != null) {
-            for (Object jsonMembersObject : membersJson) {
-                String memberId = (String) jsonMembersObject;
-                SlackUser user = knownUsersById.get(memberId);
-                toReturn.addUser(user);
-            }
-        }
-        return toReturn;
+        return ImmutableChannel.builder()
+                .id(id)
+                .name(name)
+                .topic(Optional.ofNullable(topic))
+                .purpose(Optional.ofNullable(purpose))
+                .isMember(isMember)
+                .build();
     }
 
-    static final SlackChannelImpl buildSlackImChannel(JSONObject jsonChannel, Map<String, SlackUser> knownUsersById) {
+    static final Channel buildSlackImChannel(JSONObject jsonChannel, Map<String, User> knownUsersById) {
         String id = (String) jsonChannel.get("id");
-        SlackChannelImpl toReturn = new SlackChannelImpl(id, null, null, null, true, false);
         String memberId = (String) jsonChannel.get("user");
-        SlackUser user = knownUsersById.get(memberId);
-        toReturn.addUser(user);
-        return toReturn;
+        return ImmutableChannel.builder()
+                .id(id)
+                .user(memberId)
+                .build();
     }
 
-    static final SlackTeam buildSlackTeam(JSONObject jsonTeam) {
+    static final Team buildSlackTeam(JSONObject jsonTeam) {
         String id = (String) jsonTeam.get("id");
         String name = (String) jsonTeam.get("name");
         String domain = (String) jsonTeam.get("domain");
-        return new SlackTeamImpl(id, name, domain);
+        return ImmutableTeam.builder()
+                .id(id)
+                .name(name)
+                .domain(domain)
+                .build();
     }
 
-    static final SlackIntegration buildSlackIntegration(JSONObject jsonIntegration) {
+    static final Integration buildSlackIntegration(JSONObject jsonIntegration) {
         String id = (String) jsonIntegration.get("id");
         String name = (String) jsonIntegration.get("name");
         boolean deleted = ifNullFalse(jsonIntegration, "deleted");
-        return new SlackIntegrationImpl(id, name, deleted);
+        return ImmutableIntegration.builder()
+                .id(id)
+                .name(name)
+                .deleted(deleted)
+                .build();
     }
 }

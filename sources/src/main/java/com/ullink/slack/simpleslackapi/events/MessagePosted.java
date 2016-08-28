@@ -1,9 +1,9 @@
 package com.ullink.slack.simpleslackapi.events;
 
 import com.ullink.slack.simpleslackapi.SlackAttachment;
-import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackFile;
-import com.ullink.slack.simpleslackapi.SlackUser;
+import com.ullink.slack.simpleslackapi.json.Channel;
+import com.ullink.slack.simpleslackapi.json.User;
 import org.immutables.value.Value;
 import org.json.simple.JSONObject;
 
@@ -55,8 +55,8 @@ public interface MessagePosted extends MessageEvent {
     }
 
     String messageContent();
-    SlackUser sender();
-    SlackChannel channel();
+    User sender();
+    Channel channel();
     JSONObject jsonSource();
     MessagePosted.MessageSubType messageSubType();
 

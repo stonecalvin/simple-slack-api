@@ -1,7 +1,7 @@
 package com.ullink.slack.simpleslackapi.replies;
 
-import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.json.Channel;
 
 public interface SlackChannelReply extends ParsedSlackReply {
-    SlackChannel getSlackChannel();
+    Channel getSlackChannel();
 }

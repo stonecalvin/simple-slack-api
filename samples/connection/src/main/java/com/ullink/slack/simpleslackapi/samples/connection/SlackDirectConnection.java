@@ -13,7 +13,7 @@ class TestListener {
     String username;
     @Subscribe
     public void listenConnected(Connected event) {
-        username = event.slackPersona().getUserName();
+        username = event.slackPersona().name();
         System.out.println("USER HAS CONNECTED: " + username);
     }
 

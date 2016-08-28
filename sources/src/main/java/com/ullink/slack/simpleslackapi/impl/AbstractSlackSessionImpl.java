@@ -2,131 +2,127 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.eventbus.EventBus;
 import com.ullink.slack.simpleslackapi.*;
+import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.SlackMessageReply;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 abstract class AbstractSlackSessionImpl implements SlackSession
 {
 
-    protected Map<String, SlackChannel>            channels                 = new HashMap<>();
-    protected Map<String, SlackUser>               users                    = new HashMap<>();
-    protected Map<String, SlackIntegration>        integrations             = new HashMap<>();
-    protected SlackPersona                         sessionPersona;
-    protected SlackTeam                            team;
+    protected Map<String, Channel> channels = new HashMap<>();
+    protected Map<String, User> users = new HashMap<>();
+    protected Map<String, Integration> integrations = new HashMap<>();
+    protected User sessionPersona;
+    protected Team team;
 
     protected EventBus eventBus = new EventBus("SlackJavaApiEventBus");
 
-    static final SlackChatConfiguration            DEFAULT_CONFIGURATION    = SlackChatConfiguration.getConfiguration().asUser();
-    static final boolean                           DEFAULT_UNFURL           = true;
+    static final SlackChatConfiguration DEFAULT_CONFIGURATION = SlackChatConfiguration.getConfiguration().asUser();
+    static final boolean DEFAULT_UNFURL = true;
 
     @Override
-    public SlackTeam getTeam()
+    public Team getTeam()
     {
         return team;
     }
 
     @Override
-    public Collection<SlackChannel> getChannels()
+    public Collection<Channel> getChannels()
     {
         return new ArrayList<>(channels.values());
     }
 
     @Override
-    public Collection<SlackUser> getUsers()
+    public Collection<User> getUsers()
     {
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public Collection<SlackIntegration> getIntegrations() {
+    public Collection<Integration> getIntegrations() {
         return new ArrayList<>(integrations.values());
     }
 
-    @Override
-    @Deprecated
-    public Collection<SlackBot> getBots() {
-        return users.values().stream()
-                .filter(SlackUser::isBot)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Optional<SlackChannel> findChannelByName(String channelName) {
+     @Override
+    public Optional<Channel> findChannelByName(String channelName) {
         return channels.values().stream()
-                .filter(channel -> channel.getName().equals(channelName))
+                .filter(channel -> channel.name().isPresent())
+                .filter(channel -> channel.name().get().equals(channelName))
                 .findFirst();
     }
 
     @Override
-    public SlackChannel findChannelById(String channelId)
+    public Channel findChannelById(String channelId)
     {
-        SlackChannel toReturn = channels.get(channelId);
+        Channel toReturn = channels.get(channelId);
         if (toReturn == null)
         {
             // direct channel case
             if (channelId != null && channelId.startsWith("D"))
             {
-                toReturn = new SlackChannelImpl(channelId, "", "", "", true, false);
+                toReturn = ImmutableChannel.builder()
+                        .isIm(true)
+                        .id(channelId)
+                        .build();
             }
         }
         return toReturn;
     }
 
     @Override
-    public SlackUser findUserById(String userId)
+    public User findUserById(String userId)
     {
         return users.get(userId);
     }
 
     @Override
-    public Optional<SlackUser> findUserByUserName(String userName) {
+    @Deprecated
+    public User findBotById(String botId) {
+        return users.get(botId);
+    }
+
+    @Override
+    public Optional<User> findUserByUserName(String userName) {
         return users.values().stream()
-                .filter(user -> user.getUserName().equals(userName))
+                .filter(user -> user.name().equals(userName))
                 .findFirst();
     }
 
     @Override
-    public Optional<SlackUser> findUserByEmail(String userMail) {
+    public Optional<User> findUserByEmail(String userMail) {
         return users.values().stream()
-                .filter(user -> userMail.equals(user.getUserMail()))
+                .filter(user -> user.profile().isPresent())
+                .filter(user -> userMail.equals(user.profile().get().email()))
                 .findFirst();
     }
 
     @Override
-    public SlackIntegration findIntegrationById(String integrationId)
+    public Integration findIntegrationById(String integrationId)
     {
         return integrations.get(integrationId);
     }
 
     @Override
-    public SlackPersona sessionPersona()
+    public User sessionPersona()
     {
         return sessionPersona;
     }
 
     @Override
-    @Deprecated
-    public SlackBot findBotById(String botId)
-    {
-        return users.get(botId);
-    }
-
-    @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message, SlackAttachment attachment)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment)
     {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message)
     {
         return sendMessage(channel, message, DEFAULT_UNFURL);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message, boolean unfurl)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, boolean unfurl)
     {
         SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
                 .withMessage(message)
@@ -136,24 +132,24 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message, SlackAttachment attachment, boolean unfurl)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, boolean unfurl)
     {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION, unfurl);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration)
     {
         return sendMessage(channel, message, attachment, chatConfiguration, DEFAULT_UNFURL);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, SlackPreparedMessage preparedMessage) {
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage) {
         return sendMessage(channel, preparedMessage, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
     {
         SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
                 .withMessage(message)

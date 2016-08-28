@@ -28,20 +28,25 @@ public class TestSlackJSONSessionStatusParser
         assertThat(parser.getChannels()).containsOnlyKeys("CHANNELID1", "CHANNELID2", "CHANNELID3", "GROUPID1", "DIM01");
         assertThat(parser.getUsers()).containsOnlyKeys("USERID1","USERID2","USERID3","USERID4","BOTID1","BOTID2");
         assertThat(parser.getWebSocketURL()).isEqualTo("wss://mywebsocketurl");
-        assertThat(parser.getUsers().get("USERID1").getTimeZone()).isEqualTo("Europe/Amsterdam");
-        assertThat(parser.getUsers().get("USERID1").getTimeZoneLabel()).isEqualTo("Central European Summer Time");
-        assertThat(parser.getUsers().get("USERID1").getTimeZoneOffset()).isEqualTo(7200);
 
-        assertThat(parser.getSessionPersona().getId()).isEqualTo("SELF");
-        assertThat(parser.getSessionPersona().getUserName()).isEqualTo("myself");
+        assertThat(parser.getUsers().get("USERID1").tz().isPresent()).isTrue();
+        assertThat(parser.getUsers().get("USERID1").tzLabel().isPresent()).isTrue();
+        assertThat(parser.getUsers().get("USERID1").tzOffset().isPresent()).isTrue();
 
-        assertThat(parser.getTeam().getId()).isEqualTo("TEAM");
-        assertThat(parser.getTeam().getName()).isEqualTo("Example Team");
-        assertThat(parser.getTeam().getDomain()).isEqualTo("example");
+        assertThat(parser.getUsers().get("USERID1").tz().get()).isEqualTo("Europe/Amsterdam");
+        assertThat(parser.getUsers().get("USERID1").tzLabel().get()).isEqualTo("Central European Summer Time");
+        assertThat(parser.getUsers().get("USERID1").tzOffset().get()).isEqualTo(7200);
 
-        assertThat(parser.getIntegrations().get("INTEGRATION1").getName()).isEqualTo("bot1");
-        assertThat(parser.getIntegrations().get("INTEGRATION1").isDeleted()).isEqualTo(false);
-        assertThat(parser.getIntegrations().get("INTEGRATION2").getName()).isEqualTo("bot2");
-        assertThat(parser.getIntegrations().get("INTEGRATION2").isDeleted()).isEqualTo(true);
+        assertThat(parser.getSessionPersona().id()).isEqualTo("SELF");
+        assertThat(parser.getSessionPersona().name()).isEqualTo("myself");
+
+        assertThat(parser.getTeam().id()).isEqualTo("TEAM");
+        assertThat(parser.getTeam().name()).isEqualTo("Example Team");
+        assertThat(parser.getTeam().domain()).isEqualTo("example");
+
+        assertThat(parser.getIntegrations().get("INTEGRATION1").name()).isEqualTo("bot1");
+        assertThat(parser.getIntegrations().get("INTEGRATION1").deleted()).isEqualTo(false);
+        assertThat(parser.getIntegrations().get("INTEGRATION2").name()).isEqualTo("bot2");
+        assertThat(parser.getIntegrations().get("INTEGRATION2").deleted()).isEqualTo(true);
     }
 }

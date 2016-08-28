@@ -2,6 +2,7 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.ullink.slack.simpleslackapi.*;
 import com.ullink.slack.simpleslackapi.events.*;
+import com.ullink.slack.simpleslackapi.json.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -100,7 +101,7 @@ class SlackJSONMessageParser {
     private static ChannelJoined extractChannelJoinedEvent(SlackSession slackSession, JSONObject obj)
     {
         JSONObject channelJSONObject = (JSONObject) obj.get("channel");
-        SlackChannel slackChannel = parseChannelDescription(channelJSONObject);
+        Channel slackChannel = parseChannelDescription(channelJSONObject);
 
         return ImmutableChannelJoined.builder()
                 .slackSession(slackSession)
@@ -111,7 +112,7 @@ class SlackJSONMessageParser {
     private static ChannelLeft extractChannelLeftEvent(SlackSession slackSession, JSONObject obj)
     {
         String channelId = (String) obj.get("channel");
-        SlackChannel slackChannel = slackSession.findChannelById(channelId);
+        Channel slackChannel = slackSession.findChannelById(channelId);
         return ImmutableChannelLeft.builder()
                 .slackSession(slackSession)
                 .channel(slackChannel)
@@ -121,7 +122,7 @@ class SlackJSONMessageParser {
     private static GroupJoined extractGroupJoinedEvent(SlackSession slackSession, JSONObject obj)
     {
         JSONObject channelJSONObject = (JSONObject) obj.get("channel");
-        SlackChannel slackChannel = parseChannelDescription(channelJSONObject);
+        Channel slackChannel = parseChannelDescription(channelJSONObject);
         return ImmutableGroupJoined.builder()
                 .slackSession(slackSession)
                 .channel(slackChannel)
@@ -173,9 +174,9 @@ class SlackJSONMessageParser {
     private static ChannelCreated extractChannelCreatedEvent(SlackSession slackSession, JSONObject obj)
     {
         JSONObject channelJSONObject = (JSONObject) obj.get("channel");
-        SlackChannel channel = parseChannelDescription(channelJSONObject);
+        Channel channel = parseChannelDescription(channelJSONObject);
         String creatorId = (String) channelJSONObject.get("creator");
-        SlackUser user = slackSession.findUserById(creatorId);
+        User user = slackSession.findUserById(creatorId);
         return ImmutableChannelCreated.builder()
                 .slackSession(slackSession)
                 .channel(channel)
@@ -186,7 +187,7 @@ class SlackJSONMessageParser {
     private static SlackEvent extractMessageEvent(SlackSession slackSession, JSONObject obj)
     {
         String channelId = (String) obj.get("channel");
-        SlackChannel channel = getChannel(slackSession, channelId);
+        Channel channel = getChannel(slackSession, channelId);
 
         String ts = (String) obj.get("ts");
         SlackMessageSubType subType = SlackMessageSubType.getByCode((String) obj.get("subtype"));
@@ -203,14 +204,18 @@ class SlackJSONMessageParser {
         }
     }
 
-    private static SlackChannel getChannel(SlackSession slackSession, String channelId)
+    private static Channel getChannel(SlackSession slackSession, String channelId)
     {
         if (channelId != null)
         {
             if (channelId.startsWith("D"))
             {
                 // direct messaging, on the fly channel creation
-                return new SlackChannelImpl(channelId, channelId, "", "", true, false);
+                return ImmutableChannel.builder()
+                        .id(channelId)
+                        .name(channelId)
+                        .isIm(true)
+                        .build();
             }
             else
             {
@@ -220,7 +225,7 @@ class SlackJSONMessageParser {
         return null;
     }
 
-    private static MessageUpdated parseMessageUpdated(SlackSession slackSession, JSONObject obj, SlackChannel channel, String ts)
+    private static MessageUpdated parseMessageUpdated(SlackSession slackSession, JSONObject obj, Channel channel, String ts)
     {
         JSONObject message = (JSONObject) obj.get("message");
         String text = (String) message.get("text");
@@ -237,7 +242,7 @@ class SlackJSONMessageParser {
                 .build();
     }
 
-    private static MessageDeleted parseMessageDeleted(SlackSession slackSession, JSONObject obj, SlackChannel channel, String ts)
+    private static MessageDeleted parseMessageDeleted(SlackSession slackSession, JSONObject obj, Channel channel, String ts)
     {
         String deletedTs = (String) obj.get("deleted_ts");
 
@@ -249,21 +254,25 @@ class SlackJSONMessageParser {
                 .build();
     }
 
-    private static MessagePosted parseMessagePublished(JSONObject obj, SlackChannel channel, String ts, SlackSession slackSession) {
+    private static MessagePosted parseMessagePublished(JSONObject obj, Channel channel, String ts, SlackSession slackSession) {
         String text = (String) obj.get("text");
         String userId = (String) obj.get("user");
         if (userId == null) {
             userId = (String) obj.get("bot_id");
         }
         String subtype = (String) obj.get("subtype");
-        SlackUser user = slackSession.findUserById(userId);
+        User user = slackSession.findUserById(userId);
         if (user == null) {
 
-            SlackIntegration integration = slackSession.findIntegrationById(userId);
+            Integration integration = slackSession.findIntegrationById(userId);
             if (integration == null) {
                 throw new IllegalStateException("unknown user id: " + userId);
             }
-            user = new SlackIntegrationUser(integration);
+            user = ImmutableUser.builder()
+                    .id(integration.id())
+                    .name(integration.name())
+                    .deleted(integration.deleted())
+                    .build();
 
         }
         Map<String, Integer> reacs = extractReactionsFromMessageJSON(obj);
@@ -313,7 +322,7 @@ class SlackJSONMessageParser {
         file.setPermalinkPublic((String) rawFile.get("permalink_public"));
     }
 
-    private static MessagePosted parseMessagePublishedWithFile(JSONObject obj, SlackChannel channel, String ts, SlackSession slackSession)
+    private static MessagePosted parseMessagePublishedWithFile(JSONObject obj, Channel channel, String ts, SlackSession slackSession)
     {
         SlackFile file = new SlackFile();
         if (obj.get("file")!=null){
@@ -335,7 +344,7 @@ class SlackJSONMessageParser {
 
         String userId = (String) obj.get("user");
 
-        SlackUser user = slackSession.findUserById(userId);
+        User user = slackSession.findUserById(userId);
 
         return ImmutableMessagePosted.builder()
                 .slackSession(slackSession)
@@ -349,12 +358,19 @@ class SlackJSONMessageParser {
                 .build();
     }
 
-    private static SlackChannel parseChannelDescription(JSONObject channelJSONObject) {
+    private static Channel parseChannelDescription(JSONObject channelJSONObject) {
         String id = (String) channelJSONObject.get("id");
         String name = (String) channelJSONObject.get("name");
         String topic = (String)((Map)channelJSONObject.get("topic")).get("value");
         String purpose = (String) ((Map) channelJSONObject.get("purpose")).get("value");
-        return new SlackChannelImpl(id, name, topic, purpose, id.startsWith("D"), id.startsWith("D"));
+        return ImmutableChannel.builder()
+                .id(id)
+                .name(name)
+                .topic(topic)
+                .purpose(purpose)
+                .isIm(id.startsWith("D"))
+                .isMember(id.startsWith("D"))
+                .build();
     }
 
 
@@ -365,8 +381,8 @@ class SlackJSONMessageParser {
         String fileId = (String) item.get("file");
         String fileCommentId = (String) item.get("file_comment");
         String channelId = (String) item.get("channel");
-        SlackChannel channel = (channelId != null) ? slackSession.findChannelById(channelId) : null;
-        SlackUser user = slackSession.findUserById((String) obj.get("user"));
+        Channel channel = (channelId != null) ? slackSession.findChannelById(channelId) : null;
+        User user = slackSession.findUserById((String) obj.get("user"));
 
         return ImmutableReactionAdded.builder()
                 .slackSession(slackSession)
@@ -381,7 +397,7 @@ class SlackJSONMessageParser {
 
     private static UserChange extractUserChangeEvent(SlackSession slackSession, JSONObject obj) {
         JSONObject user = (JSONObject) obj.get("user");
-        SlackUser slackUser = SlackJSONParsingUtils.buildSlackUser(user);
+        User slackUser = SlackJSONParsingUtils.buildSlackUser(user);
         return ImmutableUserChange.builder()
                 .slackSession(slackSession)
                 .user(slackUser)
@@ -391,11 +407,11 @@ class SlackJSONMessageParser {
     private static PresenceChanged extractPresenceChangeEvent(SlackSession slackSession, JSONObject obj) {
         String userId = (String) obj.get("user");
         String presence = (String) obj.get("presence");
-        SlackPersona.SlackPresence value = SlackPersona.SlackPresence.UNKNOWN;
+        Presence value = Presence.UNKNOWN;
         if ("active".equals(presence)) {
-            value = SlackPersona.SlackPresence.ACTIVE;
+            value = Presence.ACTIVE;
         } else if ("away".equals(presence)) {
-            value = SlackPersona.SlackPresence.AWAY;
+            value = Presence.AWAY;
         }
         return ImmutablePresenceChanged.builder()
                 .slackSession(slackSession)
@@ -411,8 +427,8 @@ class SlackJSONMessageParser {
         String fileId = (String) item.get("file");
         String fileCommentId = (String) item.get("file_comment");
         String channelId = (String) item.get("channel");
-        SlackChannel channel = (channelId != null) ? slackSession.findChannelById(channelId) : null;
-        SlackUser user = slackSession.findUserById((String) obj.get("user"));
+        Channel channel = (channelId != null) ? slackSession.findChannelById(channelId) : null;
+        User user = slackSession.findUserById((String) obj.get("user"));
 
         return ImmutableReactionRemoved.builder()
                 .slackSession(slackSession)
@@ -427,10 +443,10 @@ class SlackJSONMessageParser {
 
     private static PinRemoved extractPinRemovedEvent(SlackSession slackSession, JSONObject obj) {
         String senderId = (String) obj.get("user");
-        SlackUser sender = slackSession.findUserById(senderId);
+        User sender = slackSession.findUserById(senderId);
 
         String channelId = (String) obj.get("channel_id");
-        SlackChannel channel = slackSession.findChannelById(channelId);
+        Channel channel = slackSession.findChannelById(channelId);
 
         JSONObject item = (JSONObject) obj.get("item");
         String messageType = (String) item.get("type");
@@ -457,10 +473,10 @@ class SlackJSONMessageParser {
 
     private static PinAdded extractPinAddedEvent(SlackSession slackSession, JSONObject obj) {
         String senderId = (String) obj.get("user");
-        SlackUser sender = slackSession.findUserById(senderId);
+        User sender = slackSession.findUserById(senderId);
 
         String channelId = (String) obj.get("channel_id");
-        SlackChannel channel = slackSession.findChannelById(channelId);
+        Channel channel = slackSession.findChannelById(channelId);
 
         JSONObject item = (JSONObject) obj.get("item");
         String messageType = (String) item.get("type");

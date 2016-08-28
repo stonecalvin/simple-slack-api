@@ -2,6 +2,7 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.ullink.slack.simpleslackapi.*;
 import com.ullink.slack.simpleslackapi.events.*;
+import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.assertj.core.api.Assertions;
 import org.json.simple.JSONObject;
@@ -19,28 +20,37 @@ public class TestSlackJSONMessageParser {
 
     SlackSession session;
 
-    private static final String TEST_UNKNOWN_MESSAGE = "{\"type\":\"clearly_unknown\",\"channel\":\"TESTCHANNEL1\",\"user\":\"TESTUSER1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
-    private static final String TEST_NEW_MESSAGE = "{\"type\":\"message\",\"channel\":\"TESTCHANNEL1\",\"user\":\"TESTUSER1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
-    private static final String TEST_NEW_MESSAGE_FROM_INTEGRATION = "{\"type\":\"message\",\"channel\":\"TESTCHANNEL1\",\"bot_id\":\"TESTINTEGRATION1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
-    private static final String TEST_DELETED_MESSAGE = "{\"type\":\"message\",\"channel\":\"TESTCHANNEL1\",\"user\":\"TESTUSER1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000005\", \"subtype\": \"message_deleted\", \"deleted_ts\": \"1358878749.000002\"}";
-    private static final String TEST_UPDATED_MESSAGE = "{\"type\":\"message\",\"channel\":\"TESTCHANNEL1\",\"text\":\"Test text 1\",\"ts\":\"1358878755.001234\", \"subtype\": \"message_changed\", \"message\": {\"type:\" \"message\", \"user\": \"TESTUSER1\", \"text\": \"newtext\", \"ts\": \"1413187521.000005\", \"edited\": { \"user\": \"TESTUSER1\", \"ts\":\"1358878755.001234\"}}}";
+    private static final String USER_1_ID = "TESTUSER1";
+    private static final String USER_2_ID = "TESTUSER2";
+    private static final String USER_3_ID = "TESTUSER3";
 
-    private static final String TEST_CHANNEL_CREATED = "{\"type\":\"channel_created\",\"channel\": { \"id\": \"NEWCHANNEL\", \"name\": \"new channel\", \"creator\": \"TESTUSER1\", \"topic\": {\"value\": \"Catz Wid Hatz\"}, \"purpose\": {\"value\": \"To post pictures of de Catz wid dem Hatz On\"}}}";
-    private static final String TEST_CHANNEL_DELETED = "{\"type\":\"channel_deleted\",\"channel\": \"TESTCHANNEL1\"}";
+    private static final String CHANNEL_1_ID = "TESTCHANNEL1";
+    private static final String CHANNEL_2_ID = "TESTCHANNEL2";
+    private static final String CHANNEL_3_ID = "TESTCHANNEL3";
 
-    private static final String TEST_CHANNEL_ARCHIVED = "{\"type\":\"channel_archive\",\"channel\": \"TESTCHANNEL1\",\"user\":\"TESTUSER1\"}";
-    private static final String TEST_CHANNEL_UNARCHIVED = "{\"type\":\"channel_unarchive\",\"channel\": \"TESTCHANNEL1\",\"user\":\"TESTUSER1\"}";
 
-    private static final String NEW_CHANNEL = "\"channel\": { \"id\": \"NEWCHANNEL\", \"name\": \"new channel\", \"creator\": \"TESTUSER1\", \"topic\": {\"value\": \"To have something new\"}, \"purpose\": {\"value\": \"This channel so new it aint even old yet\"}}";
+    private static final String TEST_UNKNOWN_MESSAGE = "{\"type\":\"clearly_unknown\",\"channel\":\"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
+    private static final String TEST_NEW_MESSAGE = "{\"type\":\"message\",\"channel\":\"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
+    private static final String TEST_NEW_MESSAGE_FROM_INTEGRATION = "{\"type\":\"message\",\"channel\":\"" + CHANNEL_1_ID + "\",\"bot_id\":\"TESTINTEGRATION1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\"}";
+    private static final String TEST_DELETED_MESSAGE = "{\"type\":\"message\",\"channel\":\"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000005\", \"subtype\": \"message_deleted\", \"deleted_ts\": \"1358878749.000002\"}";
+    private static final String TEST_UPDATED_MESSAGE = "{\"type\":\"message\",\"channel\":\"" + CHANNEL_1_ID + "\",\"text\":\"Test text 1\",\"ts\":\"1358878755.001234\", \"subtype\": \"message_changed\", \"message\": {\"type:\" \"message\", \"user\": \"" + USER_1_ID + "\", \"text\": \"newtext\", \"ts\": \"1413187521.000005\", \"edited\": { \"user\": \"" + USER_1_ID + "\", \"ts\":\"1358878755.001234\"}}}";
+
+    private static final String TEST_CHANNEL_CREATED = "{\"type\":\"channel_created\",\"channel\": { \"id\": \"NEWCHANNEL\", \"name\": \"new channel\", \"creator\": \"" + USER_1_ID + "\", \"topic\": {\"value\": \"Catz Wid Hatz\"}, \"purpose\": {\"value\": \"To post pictures of de Catz wid dem Hatz On\"}}}";
+    private static final String TEST_CHANNEL_DELETED = "{\"type\":\"channel_deleted\",\"channel\": \"" + CHANNEL_1_ID + "\"}";
+
+    private static final String TEST_CHANNEL_ARCHIVED = "{\"type\":\"channel_archive\",\"channel\": \"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\"}";
+    private static final String TEST_CHANNEL_UNARCHIVED = "{\"type\":\"channel_unarchive\",\"channel\": \"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\"}";
+
+    private static final String NEW_CHANNEL = "\"channel\": { \"id\": \"NEWCHANNEL\", \"name\": \"new channel\", \"creator\": \"" + USER_1_ID + "\", \"topic\": {\"value\": \"To have something new\"}, \"purpose\": {\"value\": \"This channel so new it aint even old yet\"}}";
     private static final String TEST_GROUP_JOINED = "{\"type\":\"group_joined\"," + NEW_CHANNEL + "}";
 
     private static final String TEST_REACTION = " \"reaction\":\"thumbsup\", \"item\": {\"channel\":\"NEWCHANNEL\",\"ts\":\"1360782804.083113\"}";
-    private static final String TEST_REACTION_ADDED = "{\"type\":\"reaction_added\", \"user\":\"TESTUSER1\", " + TEST_REACTION + "}";
-    private static final String TEST_REACTION_REMOVED = "{\"type\":\"reaction_removed\", \"user\":\"TESTUSER1\", " + TEST_REACTION + "}";
+    private static final String TEST_REACTION_ADDED = "{\"type\":\"reaction_added\", \"user\":\"" + USER_1_ID + "\", " + TEST_REACTION + "}";
+    private static final String TEST_REACTION_REMOVED = "{\"type\":\"reaction_removed\", \"user\":\"" + USER_1_ID + "\", " + TEST_REACTION + "}";
 
-    private static final String TEST_USER_CHANGE = "{\"type\": \"user_change\",\"user\": {\"id\": \"TESTUSER1\", \"name\": \"test user 1\"}}";
+    private static final String TEST_USER_CHANGE = "{\"type\": \"user_change\",\"user\": {\"id\": \"" + USER_1_ID + "\", \"name\": \"test user 1\"}}";
 
-    private static final String TEST_ATTACHMENT = "{\"type\":\"message\",\"channel\":\"TESTCHANNEL1\",\"user\":\"TESTUSER1\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\", \"attachments\": [{\"fallback\": \"Required plain-text summary of the attachment.\", \"color\": \"#36a64f\", \"pretext\": \"Optional text that appears above the attachment block\", \"author_name\": \"Bobby Tables\", \"author_link\": \"http://flickr.com/bobby/\", \"author_icon\": \"http://flickr.com/icons/bobby.jpg\", \"title\": \"Slack API Documentation\", \"title_link\": \"https://api.slack.com/\", \"text\": \"Optional text that appears within the attachment\", \"fields\": [ { \"title\": \"Priority\", \"value\": \"High\", \"short\": false } ], \"image_url\": \"http://my-website.com/path/to/image.jpg\", \"thumb_url\": \"http://example.com/path/to/thumb.png\", \"footer\": \"Slack API\", \"footer_icon\": \"https://platform.slack-edge.com/img/default_application_icon.png\", \"ts\": 123456789}]}";
+    private static final String TEST_ATTACHMENT = "{\"type\":\"message\",\"channel\":\"" + CHANNEL_1_ID + "\",\"user\":\"" + USER_1_ID + "\",\"text\":\"Test text 1\",\"ts\":\"1413187521.000004\", \"attachments\": [{\"fallback\": \"Required plain-text summary of the attachment.\", \"color\": \"#36a64f\", \"pretext\": \"Optional text that appears above the attachment block\", \"author_name\": \"Bobby Tables\", \"author_link\": \"http://flickr.com/bobby/\", \"author_icon\": \"http://flickr.com/icons/bobby.jpg\", \"title\": \"Slack API Documentation\", \"title_link\": \"https://api.slack.com/\", \"text\": \"Optional text that appears within the attachment\", \"fields\": [ { \"title\": \"Priority\", \"value\": \"High\", \"short\": false } ], \"image_url\": \"http://my-website.com/path/to/image.jpg\", \"thumb_url\": \"http://example.com/path/to/thumb.png\", \"footer\": \"Slack API\", \"footer_icon\": \"https://platform.slack-edge.com/img/default_application_icon.png\", \"ts\": 123456789}]}";
 
     @Before
     public void setup() {
@@ -57,30 +67,39 @@ public class TestSlackJSONMessageParser {
             }
 
             @Override
-            public void setPresence(SlackPersona.SlackPresence presence) {};
+            public void setPresence(Presence presence) {};
 
             @Override
             public void connect() {
-                SlackUser user1 = new SlackUserImpl("TESTUSER1", "test user 1", "", "", "testSkype", "testPhone", "testTitle", false, false, false, false, false, false, false, "tz", "tzLabel", new Integer(0), SlackPersona.SlackPresence.ACTIVE);
-                SlackUser user2 = new SlackUserImpl("TESTUSER2", "test user 2", "", "", "testSkype", "testPhone", "testTitle", false, false, false, false, false, false, false, "tz", "tzLabel", new Integer(0), SlackPersona.SlackPresence.ACTIVE);
-                SlackUser user3 = new SlackUserImpl("TESTUSER3", "test user 3", "", "", "testSkype", "testPhone", "testTitle", false, false, false, false, false, false, false, "tz", "tzLabel", new Integer(0), SlackPersona.SlackPresence.ACTIVE);
+                User user1 = ImmutableUser.copyOf(TestUtils.generateUser("1")).withId(USER_1_ID).withName("test user 1");
+                User user2 = ImmutableUser.copyOf(TestUtils.generateUser("2")).withId(USER_2_ID).withName("test user 2");
+                User user3 = ImmutableUser.copyOf(TestUtils.generateUser("3")).withId(USER_3_ID).withName("test user 3");
 
-                users.put(user1.getId(), user1);
-                users.put(user2.getId(), user2);
-                users.put(user3.getId(), user3);
+                users.put(user1.id(), user1);
+                users.put(user2.id(), user2);
+                users.put(user3.id(), user3);
 
-                SlackIntegration integration = new SlackIntegrationImpl("TESTINTEGRATION1","integration 1",false);
+                Integration integration = ImmutableIntegration.builder()
+                        .id("TESTINTEGRATION1")
+                        .name("integration 1")
+                        .build();
 
-                integrations.put(integration.getId(),integration);
+                integrations.put(integration.id(), integration);
 
-                SlackChannel channel1 = new SlackChannelImpl("TESTCHANNEL1", "testchannel1", null, null, false, false);
-                SlackChannel channel2 = new SlackChannelImpl("TESTCHANNEL2", "testchannel2", null, null, false, false);
-                SlackChannel channel3 = new SlackChannelImpl("TESTCHANNEL3", "testchannel3", null, null, false, false);
-                SlackChannel channel4 = new SlackChannelImpl("NEWCHANNEL", "new channel", "To have something new", "This channel so new it aint even old yet", false, false);
-                channels.put(channel1.getId(), channel1);
-                channels.put(channel2.getId(), channel2);
-                channels.put(channel3.getId(), channel3);
-                channels.put(channel4.getId(), channel4);
+                Channel channel1 = ImmutableChannel.copyOf(TestUtils.generateChannel("1")).withId(CHANNEL_1_ID).withName("testchannel1");
+                Channel channel2 = ImmutableChannel.copyOf(TestUtils.generateChannel("2")).withId(CHANNEL_2_ID).withName("testchannel2");
+                Channel channel3 = ImmutableChannel.copyOf(TestUtils.generateChannel("3")).withId(CHANNEL_3_ID).withName("testchannel3");
+                Channel channel4 = ImmutableChannel.builder()
+                        .id("NEWCHANNEL")
+                        .name("new channel")
+                        .topic("To have something new")
+                        .purpose("This channel so new it aint even old yet")
+                        .build();
+
+                channels.put(channel1.id(), channel1);
+                channels.put(channel2.id(), channel2);
+                channels.put(channel3.id(), channel3);
+                channels.put(channel4.id(), channel4);
             }
 
             @Override
@@ -88,43 +107,43 @@ public class TestSlackJSONMessageParser {
             }
 
             @Override
-            public SlackMessageHandle sendMessageOverWebSocket(SlackChannel channel, String message) {
+            public SlackMessageHandle sendMessageOverWebSocket(Channel channel, String message) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public SlackMessageHandle<SlackMessageReply> sendTyping(SlackChannel channel) {
+            public SlackMessageHandle<SlackMessageReply> sendTyping(Channel channel) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public SlackPersona.SlackPresence getPresence(SlackPersona persona) {
+            public Presence getPresence(User persona) {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle deleteMessage(String timestamp, SlackChannel channel) {
+            public SlackMessageHandle deleteMessage(String timestamp, Channel channel) {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+            public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public SlackMessageHandle<SlackMessageReply> sendFile(SlackChannel channel, byte[] data, String fileName)
+            public SlackMessageHandle<SlackMessageReply> sendFile(Channel channel, byte[] data, String fileName)
             {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle updateMessage(String timestamp, SlackChannel channel, String message) {
+            public SlackMessageHandle updateMessage(String timestamp, Channel channel, String message) {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle addReactionToMessage(SlackChannel channel, String messageTimeStamp, String emojiCode) {
+            public SlackMessageHandle addReactionToMessage(Channel channel, String messageTimeStamp, String emojiCode) {
                 return null;
             }
 
@@ -134,23 +153,23 @@ public class TestSlackJSONMessageParser {
             }
 
             @Override
-            public SlackMessageHandle<SlackChannelReply> setChannelTopic(SlackChannel channel, String topic) {
+            public SlackMessageHandle<SlackChannelReply> setChannelTopic(Channel channel, String topic) {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle leaveChannel(SlackChannel channel) {
+            public SlackMessageHandle leaveChannel(Channel channel) {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(SlackUser user)
+            public SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(User user)
             {
                 return null;
             }
 
             @Override
-            public SlackMessageHandle<SlackChannelReply> openMultipartyDirectMessageChannel(SlackUser... users)
+            public SlackMessageHandle<SlackChannelReply> openMultipartyDirectMessageChannel(User... users)
             {
                 return null;
             }
@@ -175,12 +194,12 @@ public class TestSlackJSONMessageParser {
             }
 
             @Override
-            public SlackMessageHandle<SlackChannelReply> inviteToChannel(SlackChannel channel, SlackUser user) {
+            public SlackMessageHandle<SlackChannelReply> inviteToChannel(Channel channel, User user) {
               return null;
             }
 
             @Override
-            public SlackMessageHandle sendMessageToUser(SlackUser user, String message, SlackAttachment attachment) {
+            public SlackMessageHandle sendMessageToUser(User user, String message, SlackAttachment attachment) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
 
@@ -196,7 +215,7 @@ public class TestSlackJSONMessageParser {
             }
 
             @Override
-            public SlackMessageHandle<ParsedSlackReply> archiveChannel(SlackChannel channel)
+            public SlackMessageHandle<ParsedSlackReply> archiveChannel(Channel channel)
             {
                 return null;
             }
@@ -223,8 +242,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(MessagePosted.class);
         MessagePosted slackMessage = (MessagePosted) event;
-        Assertions.assertThat(slackMessage.sender().getId()).isEqualTo("TESTUSER1");
-        Assertions.assertThat(slackMessage.channel().getId()).isEqualTo("TESTCHANNEL1");
+        Assertions.assertThat(slackMessage.sender().id()).isEqualTo(USER_1_ID);
+        Assertions.assertThat(slackMessage.channel().id()).isEqualTo(CHANNEL_1_ID);
         Assertions.assertThat(slackMessage.messageContent()).isEqualTo("Test text 1");
         Assertions.assertThat(slackMessage.timestamp()).isEqualTo("1413187521.000004");
     }
@@ -236,8 +255,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(MessagePosted.class);
         MessagePosted slackMessage = (MessagePosted) event;
-        Assertions.assertThat(slackMessage.sender().getId()).isEqualTo("TESTINTEGRATION1");
-        Assertions.assertThat(slackMessage.channel().getId()).isEqualTo("TESTCHANNEL1");
+        Assertions.assertThat(slackMessage.sender().id()).isEqualTo("TESTINTEGRATION1");
+        Assertions.assertThat(slackMessage.channel().id()).isEqualTo(CHANNEL_1_ID);
         Assertions.assertThat(slackMessage.messageContent()).isEqualTo("Test text 1");
         Assertions.assertThat(slackMessage.timestamp()).isEqualTo("1413187521.000004");
     }
@@ -251,7 +270,7 @@ public class TestSlackJSONMessageParser {
         MessageDeleted slackMessageDeleted = (MessageDeleted) event;
         Assertions.assertThat(slackMessageDeleted.deletedTimestamp()).isEqualTo("1358878749.000002");
         Assertions.assertThat(slackMessageDeleted.timestamp()).isEqualTo("1413187521.000005");
-        Assertions.assertThat(slackMessageDeleted.channel().getId()).isEqualTo("TESTCHANNEL1");
+        Assertions.assertThat(slackMessageDeleted.channel().id()).isEqualTo(CHANNEL_1_ID);
     }
 
     @Test
@@ -263,7 +282,7 @@ public class TestSlackJSONMessageParser {
         MessageUpdated slackMessageUpdated = (MessageUpdated) event;
         Assertions.assertThat(slackMessageUpdated.messageTimestamp()).isEqualTo("1413187521.000005");
         Assertions.assertThat(slackMessageUpdated.timestamp()).isEqualTo("1358878755.001234");
-        Assertions.assertThat(slackMessageUpdated.channel().getId()).isEqualTo("TESTCHANNEL1");
+        Assertions.assertThat(slackMessageUpdated.channel().id()).isEqualTo(CHANNEL_1_ID);
         Assertions.assertThat(slackMessageUpdated.message()).isEqualTo("newtext");
     }
 
@@ -274,11 +293,17 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ChannelCreated.class);
         ChannelCreated slackChannelCreated = (ChannelCreated) event;
-        Assertions.assertThat(slackChannelCreated.user().getId()).isEqualTo("TESTUSER1");
-        Assertions.assertThat(slackChannelCreated.channel().getName()).isEqualTo("new channel");
-        Assertions.assertThat(slackChannelCreated.channel().getId()).isEqualTo("NEWCHANNEL");
-        Assertions.assertThat(slackChannelCreated.channel().getTopic()).isEqualTo("Catz Wid Hatz");
-        Assertions.assertThat(slackChannelCreated.channel().getPurpose()).isEqualTo("To post pictures of de Catz wid dem Hatz On");
+        Assertions.assertThat(slackChannelCreated.user().id()).isEqualTo(USER_1_ID);
+
+        Assertions.assertThat(slackChannelCreated.channel().id()).isEqualTo("NEWCHANNEL");
+
+        Assertions.assertThat(slackChannelCreated.channel().name().isPresent()).isTrue();
+        Assertions.assertThat(slackChannelCreated.channel().topic().isPresent()).isTrue();
+        Assertions.assertThat(slackChannelCreated.channel().purpose().isPresent()).isTrue();
+
+        Assertions.assertThat(slackChannelCreated.channel().name().get()).isEqualTo("new channel");
+        Assertions.assertThat(slackChannelCreated.channel().topic().get()).isEqualTo("Catz Wid Hatz");
+        Assertions.assertThat(slackChannelCreated.channel().purpose().get()).isEqualTo("To post pictures of de Catz wid dem Hatz On");
     }
 
     @Test
@@ -288,7 +313,7 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ChannelDeleted.class);
         ChannelDeleted slackChannelDeleted = (ChannelDeleted) event;
-        Assertions.assertThat(slackChannelDeleted.channel().getId()).isEqualTo("TESTCHANNEL1");
+        Assertions.assertThat(slackChannelDeleted.channel().id()).isEqualTo(CHANNEL_1_ID);
     }
 
     @Test
@@ -298,8 +323,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ChannelArchived.class);
         ChannelArchived slackChannelArchived = (ChannelArchived) event;
-        Assertions.assertThat(slackChannelArchived.channel().getId()).isEqualTo("TESTCHANNEL1");
-        Assertions.assertThat(slackChannelArchived.user().getId()).isEqualTo("TESTUSER1");
+        Assertions.assertThat(slackChannelArchived.channel().id()).isEqualTo(CHANNEL_1_ID);
+        Assertions.assertThat(slackChannelArchived.user().id()).isEqualTo(USER_1_ID);
     }
 
     @Test
@@ -309,8 +334,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ChannelUnarchived.class);
         ChannelUnarchived slackChannelUnarchived = (ChannelUnarchived) event;
-        Assertions.assertThat(slackChannelUnarchived.channel().getId()).isEqualTo("TESTCHANNEL1");
-        Assertions.assertThat(slackChannelUnarchived.user().getId()).isEqualTo("TESTUSER1");
+        Assertions.assertThat(slackChannelUnarchived.channel().id()).isEqualTo(CHANNEL_1_ID);
+        Assertions.assertThat(slackChannelUnarchived.user().id()).isEqualTo(USER_1_ID);
     }
 
     @Test
@@ -320,10 +345,15 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(GroupJoined.class);
         GroupJoined slackGroupJoined = (GroupJoined) event;
-        Assertions.assertThat(slackGroupJoined.channel().getId()).isEqualTo("NEWCHANNEL");
-        Assertions.assertThat(slackGroupJoined.channel().getName()).isEqualTo("new channel");
-        Assertions.assertThat(slackGroupJoined.channel().getTopic()).isEqualTo("To have something new");
-        Assertions.assertThat(slackGroupJoined.channel().getPurpose()).isEqualTo("This channel so new it aint even old yet");
+        Assertions.assertThat(slackGroupJoined.channel().id()).isEqualTo("NEWCHANNEL");
+
+        Assertions.assertThat(slackGroupJoined.channel().name().isPresent()).isTrue();
+        Assertions.assertThat(slackGroupJoined.channel().topic().isPresent()).isTrue();
+        Assertions.assertThat(slackGroupJoined.channel().purpose().isPresent()).isTrue();
+
+        Assertions.assertThat(slackGroupJoined.channel().name().get()).isEqualTo("new channel");
+        Assertions.assertThat(slackGroupJoined.channel().topic().get()).isEqualTo("To have something new");
+        Assertions.assertThat(slackGroupJoined.channel().purpose().get()).isEqualTo("This channel so new it aint even old yet");
     }
 
     @Test
@@ -351,11 +381,16 @@ public class TestSlackJSONMessageParser {
 
     }
 
-    private void shouldValidateNewChannelsValues(SlackChannel channel) {
-        Assert.assertTrue(channel.getId().equals("NEWCHANNEL"));
-        Assert.assertTrue(channel.getName().equals("new channel"));
-        Assert.assertTrue(channel.getPurpose().equals("This channel so new it aint even old yet"));
-        Assert.assertTrue(channel.getTopic().equals("To have something new"));
+    private void shouldValidateNewChannelsValues(Channel channel) {
+        Assert.assertTrue(channel.id().equals("NEWCHANNEL"));
+
+        Assert.assertTrue(channel.name().isPresent());
+        Assert.assertTrue(channel.purpose().isPresent());
+        Assert.assertTrue(channel.topic().isPresent());
+
+        Assert.assertTrue(channel.name().get().equals("new channel"));
+        Assert.assertTrue(channel.purpose().get().equals("This channel so new it aint even old yet"));
+        Assert.assertTrue(channel.topic().get().equals("To have something new"));
     }
 
     @Test
@@ -365,10 +400,10 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(UserChange.class);
         UserChange slackUserChange = (UserChange)event;
-        SlackUser user = slackUserChange.user();
+        User user = slackUserChange.user();
         Assertions.assertThat(user).isNotNull();
-        Assertions.assertThat(user.getId()).isEqualTo("TESTUSER1");
-        Assertions.assertThat(session.findUserById("TESTUSER1").getUserName()).isEqualTo(user.getUserName());
+        Assertions.assertThat(user.id()).isEqualTo(USER_1_ID);
+        Assertions.assertThat(session.findUserById(USER_1_ID).name()).isEqualTo(user.name());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.ullink.slack.simpleslackapi.impl;
 
 import com.ullink.slack.simpleslackapi.*;
+import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.junit.Test;
 
@@ -11,30 +12,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestAbstractSlackSessionImpl
 {
-
     private class TestSlackSessionImpl extends AbstractSlackSessionImpl
     {
+
+
         @Override
-        public void setPresence(SlackPersona.SlackPresence presence) {
+        public void setPresence(Presence presence) {
         }
         @Override
         public void connect()
         {
-            channels.put("channelid1",new SlackChannelImpl("channelid1", "testchannel1", "topicchannel1", "topicchannel1", false, false));
-            channels.put("channelid2",new SlackChannelImpl("channelid2", "testchannel2", "topicchannel2", "topicchannel2", false, false));
-            channels.put("channelid3",new SlackChannelImpl("channelid3", "testchannel3", "topicchannel3", "topicchannel3", false, false));
-            channels.put("channelid4",new SlackChannelImpl("channelid4", "testchannel4", "topicchannel4", "topicchannel4", false, false));
-            channels.put("channelid5",new SlackChannelImpl("channelid5", "testchannel5", "topicchannel5", "topicchannel5", false, false));
+            channels.put("channelid1", TestUtils.generateChannel("1"));
+            channels.put("channelid2", TestUtils.generateChannel("2"));
+            channels.put("channelid3", TestUtils.generateChannel("3"));
+            channels.put("channelid4", TestUtils.generateChannel("4"));
+            channels.put("channelid5", TestUtils.generateChannel("5"));
 
-            users.put("userid1",new SlackUserImpl("userid1", "username1", "realname1","userid1@my.mail", "testSkype", "testPhone", "testTitle", false,false,false,false,false,false, false,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("userid2",new SlackUserImpl("userid2", "username2", "realname2","userid2@my.mail", "testSkype", "testPhone", "testTitle", false,false,false,false,false,false, false,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("userid3",new SlackUserImpl("userid3", "username3", "realname3","userid3@my.mail", "testSkype", "testPhone", "testTitle", true,false,false,false,false,false, false,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("userid4",new SlackUserImpl("userid4", "username4", "realname4","userid4@my.mail", "testSkype", "testPhone", "testTitle", false,false,false,false,false,false, false,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("userid5",new SlackUserImpl("userid5", "username5", "realname4","userid5@my.mail", "testSkype", "testPhone", "testTitle", true,false,false,false,false,false, false,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
+            users.put("userid1", TestUtils.generateUser("1"));
+            users.put("userid2", TestUtils.generateUser("2"));
+            users.put("userid3", TestUtils.generateUser("3"));
+            users.put("userid4", TestUtils.generateUser("4"));
+            users.put("userid5", TestUtils.generateUser("5"));
 
-            users.put("botid1",new SlackUserImpl("botid1", "botname1", "real bot name 1", null, "testSkype", "testPhone", "testTitle", false,false,false,false,false,false,true,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("botid2",new SlackUserImpl("botid2", "botname2", "real bot name 2", null, "testSkype", "testPhone", "testTitle", false,false,false,false,false,false,true,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
-            users.put("botid3",new SlackUserImpl("botid3", "botname3", "real bot name 3", null, "testSkype", "testPhone", "testTitle", true,false,false,false,false,false,true,"tz","tzLabel",new Integer(0), SlackPersona.SlackPresence.ACTIVE));
+            users.put("botid1", TestUtils.generateBot("1"));
+            users.put("botid2", TestUtils.generateBot("2"));
+            users.put("botid3", TestUtils.generateBot("3"));
         }
 
         @Override
@@ -43,46 +45,46 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle sendMessageOverWebSocket(SlackChannel channel, String message)
+        public SlackMessageHandle sendMessageOverWebSocket(Channel channel, String message)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendTyping(SlackChannel channel) {
+        public SlackMessageHandle<SlackMessageReply> sendTyping(Channel channel) {
            return null;
         }
 
         @Override
-        public SlackPersona.SlackPresence getPresence(SlackPersona persona) {
+        public Presence getPresence(User persona) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle deleteMessage(String timestamp, SlackChannel channel)
+        public SlackMessageHandle deleteMessage(String timestamp, Channel channel)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendMessage(SlackChannel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+        public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendFile(SlackChannel channel, byte[] data, String fileName)
+        public SlackMessageHandle<SlackMessageReply> sendFile(Channel channel, byte[] data, String fileName)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle updateMessage(String timestamp, SlackChannel channel, String message)
+        public SlackMessageHandle updateMessage(String timestamp, Channel channel, String message)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle addReactionToMessage(SlackChannel channel, String messageTimeStamp, String emojiCode)
+        public SlackMessageHandle addReactionToMessage(Channel channel, String messageTimeStamp, String emojiCode)
         {
             return null;
         }
@@ -94,24 +96,24 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> setChannelTopic(SlackChannel channel, String topic) {
+        public SlackMessageHandle<SlackChannelReply> setChannelTopic(Channel channel, String topic) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle leaveChannel(SlackChannel channel)
+        public SlackMessageHandle leaveChannel(Channel channel)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(SlackUser user)
+        public SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(User user)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> openMultipartyDirectMessageChannel(SlackUser... users)
+        public SlackMessageHandle<SlackChannelReply> openMultipartyDirectMessageChannel(User... users)
         {
             return null;
         }
@@ -136,12 +138,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> inviteToChannel(SlackChannel channel, SlackUser user) {
+        public SlackMessageHandle<SlackChannelReply> inviteToChannel(Channel channel, User user) {
           return null;
         }
 
         @Override
-        public SlackMessageHandle<ParsedSlackReply> archiveChannel(SlackChannel channel)
+        public SlackMessageHandle<ParsedSlackReply> archiveChannel(Channel channel)
         {
           return null;
         }
@@ -152,7 +154,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle sendMessageToUser(SlackUser user, String message, SlackAttachment attachment) {
+        public SlackMessageHandle sendMessageToUser(User user, String message, SlackAttachment attachment) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
@@ -179,9 +181,9 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        Optional<SlackChannel> channel = slackSession.findChannelByName("testchannel1");
+        Optional<Channel> channel = slackSession.findChannelByName("testchannel1");
         assertThat(channel.isPresent()).isTrue();
-        assertThat(channel.get().getId()).isEqualTo("channelid1");
+        assertThat(channel.get().id()).isEqualTo("channelid1");
     }
 
     @Test
@@ -202,7 +204,8 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findChannelById("channelid1")).isNotNull();
-        assertThat(slackSession.findChannelById("channelid1").getName()).isEqualTo("testchannel1");
+        assertThat(slackSession.findChannelById("channelid1").name().isPresent()).isTrue();
+        assertThat(slackSession.findChannelById("channelid1").name().get()).isEqualTo("testchannel1");
     }
 
     @Test
@@ -223,7 +226,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findBotById("botid1")).isNotNull();
-        assertThat(slackSession.findBotById("botid1").getUserName()).isEqualTo("botname1");
+        assertThat(slackSession.findBotById("botid1").name()).isEqualTo("botname1");
     }
 
     @Test
@@ -244,7 +247,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findUserById("userid1")).isNotNull();
-        assertThat(slackSession.findUserById("userid1").getUserName()).isEqualTo("username1");
+        assertThat(slackSession.findUserById("userid1").name()).isEqualTo("username1");
     }
 
     @Test
@@ -265,7 +268,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findUserByUserName("username1").isPresent()).isTrue();
-        assertThat(slackSession.findUserByUserName("username1").get().getId()).isEqualTo("userid1");
+        assertThat(slackSession.findUserByUserName("username1").get().id()).isEqualTo("userid1");
     }
 
     @Test
