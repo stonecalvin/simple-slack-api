@@ -1,18 +1,10 @@
 package com.ullink.slack.simpleslackapi.events;
 
-import com.ullink.slack.simpleslackapi.json.Channel;
-import com.ullink.slack.simpleslackapi.json.User;
+import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
+@Gson.TypeAdapters
 @Value.Immutable
-public interface ReactionRemoved extends SlackEvent{
-    Channel channel();
-    User user();
-    String messageID();
-    String emojiName();
-
-    Optional<String> fileID();
-    Optional<String> fileCommentID();
+public abstract class ReactionRemoved extends ReactionEvent {
+    public static final String type = "reaction_removed";
 }

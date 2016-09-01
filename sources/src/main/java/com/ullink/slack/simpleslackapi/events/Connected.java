@@ -1,9 +1,11 @@
 package com.ullink.slack.simpleslackapi.events;
 
 import com.ullink.slack.simpleslackapi.json.User;
+import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
+@Gson.TypeAdapters
 @Value.Immutable
-public interface Connected extends SlackEvent {
-    User slackPersona();
+public abstract class Connected extends SlackEvent {
+    public abstract User slackPersona();
 }

@@ -1,17 +1,21 @@
 package com.ullink.slack.simpleslackapi.events;
 
-import com.ullink.slack.simpleslackapi.SlackAttachment;
-import com.ullink.slack.simpleslackapi.json.Channel;
+import com.google.gson.annotations.SerializedName;
+import com.ullink.slack.simpleslackapi.json.Message;
+import com.ullink.slack.simpleslackapi.json.MyAttachment;
+import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+@Gson.TypeAdapters
 @Value.Immutable
-public interface MessageUpdated extends MessageEvent {
-    Channel channel();
-    String messageTimestamp();
-    String message();
+public abstract class MessageUpdated extends MessageEvent {
+    public static final String type = "message_changed";
 
-    Optional<ArrayList<SlackAttachment>> attachments();
+    @SerializedName("event_ts") public abstract String messageTimestamp();
+
+    public abstract Message message();
+    public abstract Optional<List<MyAttachment>> attachments();
 }

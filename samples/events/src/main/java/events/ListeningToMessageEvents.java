@@ -19,7 +19,7 @@ public class ListeningToMessageEvents
         @Subscribe
         public void listenMessagePosted(MessagePosted event) {
             Channel channelOnWhichMessageWasPosted = event.channel();
-            String messageContent = event.messageContent();
+            String messageContent = event.text();
             User messageSender = event.sender();
         }
 
@@ -70,7 +70,7 @@ public class ListeningToMessageEvents
                 }
 
                 // Then you can also filter out on the message content itself
-                String messageContent = event.messageContent();
+                String messageContent = event.text();
                 if (!messageContent.contains("keyword")) {
                     return;
                 }

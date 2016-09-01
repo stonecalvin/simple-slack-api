@@ -19,7 +19,8 @@ class TestListener {
 
     @Subscribe
     public void listenMessagePosted(MessagePosted event) {
-        System.out.println("MESSAGE POSTED: " + event.messageContent());
+        System.out.println("MESSAGE POSTED: " + event.text());
+        System.out.println("SENDER: " + event.sender());
     }
 
 }

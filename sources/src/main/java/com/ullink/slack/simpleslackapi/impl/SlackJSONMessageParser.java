@@ -6,54 +6,9 @@ import com.ullink.slack.simpleslackapi.json.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 class SlackJSONMessageParser {
-
-    public static enum SlackMessageSubType
-    {
-        CHANNEL_JOIN("channel_join"),
-        CHANNEL_LEAVE("channel_leave"),
-        MESSAGE_CHANGED("message_changed"),
-        MESSAGE_DELETED("message_deleted"),
-        OTHER("-"),
-        FILE_SHARE("file_share");
-
-        private static final Map<String, SlackMessageSubType> CODE_MAP = new HashMap<>();
-
-        static
-        {
-            for (SlackMessageSubType enumValue : SlackMessageSubType.values())
-            {
-                CODE_MAP.put(enumValue.getCode(), enumValue);
-            }
-        }
-
-        String code;
-
-        public static SlackMessageSubType getByCode(String code)
-        {
-            SlackMessageSubType toReturn = CODE_MAP.get(code);
-            if (toReturn == null)
-            {
-                return OTHER;
-            }
-            return toReturn;
-        }
-
-        SlackMessageSubType(String code)
-        {
-            this.code = code;
-        }
-
-        public String getCode()
-        {
-            return code;
-        }
-    }
 
     static SlackEvent decode(SlackSession slackSession, JSONObject obj) {
         String type = (String) obj.get("type");
@@ -115,7 +70,7 @@ class SlackJSONMessageParser {
         Channel slackChannel = slackSession.findChannelById(channelId);
         return ImmutableChannelLeft.builder()
                 .slackSession(slackSession)
-                .channel(slackChannel)
+                .channelId(slackChannel.id())
                 .build();
     }
 
@@ -190,7 +145,7 @@ class SlackJSONMessageParser {
         Channel channel = getChannel(slackSession, channelId);
 
         String ts = (String) obj.get("ts");
-        SlackMessageSubType subType = SlackMessageSubType.getByCode((String) obj.get("subtype"));
+        MessageSubtype subType = MessageSubtype.fromCode((String) obj.get("subtype"));
         switch (subType)
         {
             case MESSAGE_CHANGED:
@@ -230,15 +185,15 @@ class SlackJSONMessageParser {
         JSONObject message = (JSONObject) obj.get("message");
         String text = (String) message.get("text");
         String messageTs = (String) message.get("ts");
-        ArrayList<SlackAttachment> attachments = extractAttachmentsFromMessageJSON(message);
+        List<SlackAttachment> attachments = extractAttachmentsFromMessageJSON(message);
 
         return ImmutableMessageUpdated.builder()
                 .slackSession(slackSession)
-                .channel(channel)
-                .timestamp(ts)
+                .channelId(channel.id())
+                .ts(ts)
                 .messageTimestamp(messageTs)
-                .message(text)
-                .attachments(Optional.ofNullable(attachments))
+                .message(ImmutableMessage.builder().text(text).user("test").ts(messageTs).build())
+//                .attachments(Optional.ofNullable(attachments))
                 .build();
     }
 
@@ -248,8 +203,8 @@ class SlackJSONMessageParser {
 
         return ImmutableMessageDeleted.builder()
                 .slackSession(slackSession)
-                .channel(channel)
-                .timestamp(ts)
+                .channelId(channel.id())
+                .ts(ts)
                 .deletedTimestamp(deletedTs)
                 .build();
     }
@@ -280,13 +235,12 @@ class SlackJSONMessageParser {
 
         return ImmutableMessagePosted.builder()
                 .slackSession(slackSession)
-                .channel(channel)
-                .timestamp(ts)
-                .messageContent(text)
-                .sender(user)
+                .channelId(channel.id())
+                .ts(ts)
+                .text(text)
+                .userId(user.id())
                 .jsonSource(obj)
-                .messageSubType(MessagePosted.MessageSubType.fromCode(subtype))
-                .attachments(Optional.ofNullable(attachments))
+//                .attachments(Optional.ofNullable(attachments))
                 .reactions(Optional.ofNullable(reacs))
                 .build();
 
@@ -348,13 +302,12 @@ class SlackJSONMessageParser {
 
         return ImmutableMessagePosted.builder()
                 .slackSession(slackSession)
-                .channel(channel)
-                .timestamp(ts)
-                .messageContent(text)
-                .sender(user)
+                .channelId(channel.id())
+                .ts(ts)
+                .text(text)
+                .userId(user.id())
                 .jsonSource(obj)
-                .messageSubType(MessagePosted.MessageSubType.fromCode(subtype))
-                .slackFile(Optional.of(file))
+//                .slackFile(Optional.of(file))
                 .build();
     }
 
@@ -366,8 +319,8 @@ class SlackJSONMessageParser {
         return ImmutableChannel.builder()
                 .id(id)
                 .name(name)
-                .topic(topic)
-                .purpose(purpose)
+//                .topic(topic)
+//                .purpose(purpose)
                 .isIm(id.startsWith("D"))
                 .isMember(id.startsWith("D"))
                 .build();
@@ -386,10 +339,9 @@ class SlackJSONMessageParser {
 
         return ImmutableReactionAdded.builder()
                 .slackSession(slackSession)
-                .emojiName(emojiName)
-                .messageID(messageId)
-                .channel(channel)
-                .user(user)
+                .reaction(emojiName)
+                .item(ImmutableItem.builder().channel(channelId).ts("toremove").type("toremove").build())
+                .userId(user.id())
                 .fileID(Optional.ofNullable(fileId))
                 .fileCommentID(Optional.ofNullable(fileCommentId))
                 .build();
@@ -415,7 +367,7 @@ class SlackJSONMessageParser {
         }
         return ImmutablePresenceChanged.builder()
                 .slackSession(slackSession)
-                .userId(userId)
+                .user(userId)
                 .presence(value)
                 .build();
     }
@@ -432,10 +384,9 @@ class SlackJSONMessageParser {
 
         return ImmutableReactionRemoved.builder()
                 .slackSession(slackSession)
-                .emojiName(emojiName)
-                .messageID(messageId)
-                .channel(channel)
-                .user(user)
+                .reaction(emojiName)
+                .item(ImmutableItem.builder().channel(channelId).ts("toremove").type("toremove").build())
+                .userId(user.id())
                 .fileID(Optional.ofNullable(fileId))
                 .fileCommentID(Optional.ofNullable(fileCommentId))
                 .build();

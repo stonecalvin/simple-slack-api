@@ -92,8 +92,8 @@ public class TestSlackJSONMessageParser {
                 Channel channel4 = ImmutableChannel.builder()
                         .id("NEWCHANNEL")
                         .name("new channel")
-                        .topic("To have something new")
-                        .purpose("This channel so new it aint even old yet")
+                        .topic(ImmutableTopic.builder().value("To have something new").lastSet(0).build())
+                        .purpose(ImmutableTopic.builder().value("This channel so new it aint even old yet").lastSet(0).build())
                         .build();
 
                 channels.put(channel1.id(), channel1);
@@ -244,8 +244,8 @@ public class TestSlackJSONMessageParser {
         MessagePosted slackMessage = (MessagePosted) event;
         Assertions.assertThat(slackMessage.sender().id()).isEqualTo(USER_1_ID);
         Assertions.assertThat(slackMessage.channel().id()).isEqualTo(CHANNEL_1_ID);
-        Assertions.assertThat(slackMessage.messageContent()).isEqualTo("Test text 1");
-        Assertions.assertThat(slackMessage.timestamp()).isEqualTo("1413187521.000004");
+        Assertions.assertThat(slackMessage.text()).isEqualTo("Test text 1");
+        Assertions.assertThat(slackMessage.ts()).isEqualTo("1413187521.000004");
     }
 
     @Test
@@ -257,8 +257,8 @@ public class TestSlackJSONMessageParser {
         MessagePosted slackMessage = (MessagePosted) event;
         Assertions.assertThat(slackMessage.sender().id()).isEqualTo("TESTINTEGRATION1");
         Assertions.assertThat(slackMessage.channel().id()).isEqualTo(CHANNEL_1_ID);
-        Assertions.assertThat(slackMessage.messageContent()).isEqualTo("Test text 1");
-        Assertions.assertThat(slackMessage.timestamp()).isEqualTo("1413187521.000004");
+        Assertions.assertThat(slackMessage.text()).isEqualTo("Test text 1");
+        Assertions.assertThat(slackMessage.ts()).isEqualTo("1413187521.000004");
     }
 
     @Test
@@ -269,7 +269,7 @@ public class TestSlackJSONMessageParser {
         Assertions.assertThat(event).isInstanceOf(MessageDeleted.class);
         MessageDeleted slackMessageDeleted = (MessageDeleted) event;
         Assertions.assertThat(slackMessageDeleted.deletedTimestamp()).isEqualTo("1358878749.000002");
-        Assertions.assertThat(slackMessageDeleted.timestamp()).isEqualTo("1413187521.000005");
+        Assertions.assertThat(slackMessageDeleted.ts()).isEqualTo("1413187521.000005");
         Assertions.assertThat(slackMessageDeleted.channel().id()).isEqualTo(CHANNEL_1_ID);
     }
 
@@ -281,7 +281,7 @@ public class TestSlackJSONMessageParser {
         Assertions.assertThat(event).isInstanceOf(MessageUpdated.class);
         MessageUpdated slackMessageUpdated = (MessageUpdated) event;
         Assertions.assertThat(slackMessageUpdated.messageTimestamp()).isEqualTo("1413187521.000005");
-        Assertions.assertThat(slackMessageUpdated.timestamp()).isEqualTo("1358878755.001234");
+        Assertions.assertThat(slackMessageUpdated.ts()).isEqualTo("1358878755.001234");
         Assertions.assertThat(slackMessageUpdated.channel().id()).isEqualTo(CHANNEL_1_ID);
         Assertions.assertThat(slackMessageUpdated.message()).isEqualTo("newtext");
     }
@@ -293,7 +293,7 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ChannelCreated.class);
         ChannelCreated slackChannelCreated = (ChannelCreated) event;
-        Assertions.assertThat(slackChannelCreated.user().id()).isEqualTo(USER_1_ID);
+        Assertions.assertThat(slackChannelCreated.channel().creator()).isEqualTo(USER_1_ID);
 
         Assertions.assertThat(slackChannelCreated.channel().id()).isEqualTo("NEWCHANNEL");
 
@@ -363,8 +363,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ReactionAdded.class);
         ReactionAdded reacAdded = (ReactionAdded) event;
-        Assert.assertTrue(reacAdded.emojiName().equals("thumbsup"));
-        Assert.assertTrue(reacAdded.messageID().equals("1360782804.083113"));
+        Assert.assertTrue(reacAdded.reaction().equals("thumbsup"));
+        Assert.assertTrue(reacAdded.ts().equals("1360782804.083113"));
         shouldValidateNewChannelsValues(reacAdded.channel());
     }
 
@@ -375,8 +375,8 @@ public class TestSlackJSONMessageParser {
         SlackEvent event = SlackJSONMessageParser.decode(session, object);
         Assertions.assertThat(event).isInstanceOf(ReactionRemoved.class);
         ReactionRemoved reacRemoved = (ReactionRemoved) event;
-        Assert.assertTrue(reacRemoved.emojiName().equals("thumbsup"));
-        Assert.assertTrue(reacRemoved.messageID().equals("1360782804.083113"));
+        Assert.assertTrue(reacRemoved.reaction().equals("thumbsup"));
+        Assert.assertTrue(reacRemoved.ts().equals("1360782804.083113"));
         shouldValidateNewChannelsValues(reacRemoved.channel());
 
     }
@@ -416,24 +416,24 @@ public class TestSlackJSONMessageParser {
         Assertions.assertThat(slackMessage.attachments().isPresent()).isTrue();
         Assertions.assertThat(slackMessage.attachments().get().size() == 1);
 
-        SlackAttachment attachment = slackMessage.attachments().get().get(0);
+        MyAttachment attachment = slackMessage.attachments().get().get(0);
 
-        Assertions.assertThat(attachment.getFallback()).isEqualTo("Required plain-text summary of the attachment.");
-        Assertions.assertThat(attachment.getColor()).isEqualTo("#36a64f");
-        Assertions.assertThat(attachment.getPretext()).isEqualTo("Optional text that appears above the attachment block");
-        Assertions.assertThat(attachment.getAuthorName()).isEqualTo("Bobby Tables");
-        Assertions.assertThat(attachment.getAuthorLink()).isEqualTo("http://flickr.com/bobby/");
-        Assertions.assertThat(attachment.getAuthorIcon()).isEqualTo("http://flickr.com/icons/bobby.jpg");
-        Assertions.assertThat(attachment.getTitle()).isEqualTo("Slack API Documentation");
-        Assertions.assertThat(attachment.getTitleLink()).isEqualTo("https://api.slack.com/");
-        Assertions.assertThat(attachment.getText()).isEqualTo("Optional text that appears within the attachment");
-        Assertions.assertThat(attachment.getThumbUrl()).isEqualTo("http://example.com/path/to/thumb.png");
-        Assertions.assertThat(attachment.getFooter()).isEqualTo("Slack API");
-        Assertions.assertThat(attachment.getFooterIcon()).isEqualTo("https://platform.slack-edge.com/img/default_application_icon.png");
+        Assertions.assertThat(attachment.fallback()).isEqualTo("Required plain-text summary of the attachment.");
+        Assertions.assertThat(attachment.color()).isEqualTo("#36a64f");
+        Assertions.assertThat(attachment.pretext()).isEqualTo("Optional text that appears above the attachment block");
+        Assertions.assertThat(attachment.authorName()).isEqualTo("Bobby Tables");
+        Assertions.assertThat(attachment.authorLink()).isEqualTo("http://flickr.com/bobby/");
+        Assertions.assertThat(attachment.authorIcon()).isEqualTo("http://flickr.com/icons/bobby.jpg");
+        Assertions.assertThat(attachment.title()).isEqualTo("Slack API Documentation");
+        Assertions.assertThat(attachment.titleLink()).isEqualTo("https://api.slack.com/");
+        Assertions.assertThat(attachment.text()).isEqualTo("Optional text that appears within the attachment");
+        Assertions.assertThat(attachment.thumbUrl()).isEqualTo("http://example.com/path/to/thumb.png");
+        Assertions.assertThat(attachment.footer()).isEqualTo("Slack API");
+        Assertions.assertThat(attachment.footerIcon()).isEqualTo("https://platform.slack-edge.com/img/default_application_icon.png");
 
-        Assertions.assertThat(attachment.getFields().size()).isEqualTo(1);
+        Assertions.assertThat(attachment.fields().size()).isEqualTo(1);
 
-        SlackField field = attachment.getFields().get(0);
+        SlackField field = attachment.fields().get(0);
 
         Assertions.assertThat(field.getTitle()).isEqualTo("Priority");
         Assertions.assertThat(field.getValue()).isEqualTo("High");

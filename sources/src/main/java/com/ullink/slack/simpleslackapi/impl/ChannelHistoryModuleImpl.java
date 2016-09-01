@@ -131,7 +131,7 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         // In my mind this is actually supposed to just add 1 to the emoji count of the "correct" message?
         @Subscribe
         public void onEvent(ReactionAdded event) {
-            String emojiName = event.emojiName();
+            String emojiName = event.reaction();
             for (MessagePosted message : messages) {
                 if (!message.reactions().isPresent()) {
                     continue;
@@ -163,7 +163,7 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         // the correct message.
         @Subscribe
         public void onEvent(ReactionRemoved event) {
-            String emojiName = event.emojiName();
+            String emojiName = event.reaction();
 
             for (MessagePosted message : messages) {
                 if (!message.reactions().isPresent()) {

@@ -149,28 +149,17 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
         LOGGER.debug(response.getStatusLine().toString());
 
         // Do some parsing of the response
-        // TODO: That whole json parser thing is kinda gross. Think about how we should use the data and auto parse with jackson
         String jsonResponse = CharStreams.toString(new InputStreamReader(response.getEntity().getContent()));
-        SlackJSONSessionStatusParser sessionParser = new SlackJSONSessionStatusParser(jsonResponse);
-
-        try {
-            sessionParser.parse();
-        }
-        catch (ParseException e1) {
-            LOGGER.error(e1.toString());
-        }
-
-        if (sessionParser.getError() != null) {
-            LOGGER.error("Error during authentication : " + sessionParser.getError());
-            throw new ConnectException(sessionParser.getError());
-        }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         for (TypeAdapterFactory factory : ServiceLoader.load(TypeAdapterFactory.class)) {
             gsonBuilder.registerTypeAdapterFactory(factory);
         }
 
-        gson = gsonBuilder.serializeNulls().create();
+        gson = gsonBuilder
+                .registerTypeAdapter(SlackEvent.class, new EventTypeDeserializer())
+                .serializeNulls()
+                .create();
         SessionStatus session = gson.fromJson(jsonResponse, SessionStatus.class);
 
         users = session.users().stream()
@@ -456,7 +445,7 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
         Map<String, String> arguments = new HashMap<>();
         arguments.put("token", authToken);
         arguments.put("channel", channel.id());
-        arguments.put("timestamp", messageTimeStamp);
+        arguments.put("ts", messageTimeStamp);
         arguments.put("name", emojiCode);
         postSlackCommand(arguments, REACTIONS_ADD_COMMAND, handle);
         return handle;
@@ -782,26 +771,80 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
             LOGGER.debug("pong received " + lastPingAck);
         }
         else {
-            JSONObject object = parseObject(message);
-            SlackEvent slackEvent = SlackJSONMessageParser.decode(this, object);
-            if (slackEvent instanceof ChannelCreated)
-            {
-                ChannelCreated channelCreatedEvent = (ChannelCreated) slackEvent;
-                channels.put(channelCreatedEvent.channel().id(), channelCreatedEvent.channel());
-            }
-            if (slackEvent instanceof GroupJoined)
-            {
-                GroupJoined groupJoinedEvent = (GroupJoined) slackEvent;
-                channels.put(groupJoinedEvent.channel().id(), groupJoinedEvent.channel());
-            }
-            if (slackEvent instanceof UserChange)
-            {
-                UserChange userChange = (UserChange) slackEvent;
-                users.put(userChange.user().id(), userChange.user());
+            SlackEvent slackEvent;
+            try {
+                slackEvent = gson.fromJson(message, SlackEvent.class);
+            } catch (Exception e) {
+                LOGGER.error("Encountered error while parsing message json");
+                e.printStackTrace();
+                return;
             }
 
-            eventBus.post(slackEvent);
+            eventBus.post(postProcessEvent(slackEvent));
         }
+    }
+
+    private SlackEvent postProcessEvent(SlackEvent slackEvent) {
+        // TODO: There has got to be a better way to get the session into these immutable objects.
+        if (slackEvent instanceof ChannelCreated) {
+            ChannelCreated channelCreatedEvent = (ChannelCreated) slackEvent;
+            channels.put(channelCreatedEvent.channel().id(), channelCreatedEvent.channel());
+            return ImmutableChannelCreated.copyOf(channelCreatedEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof GroupJoined) {
+            GroupJoined groupJoinedEvent = (GroupJoined) slackEvent;
+            channels.put(groupJoinedEvent.channel().id(), groupJoinedEvent.channel());
+            return ImmutableGroupJoined.copyOf(groupJoinedEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof UserChange) {
+            UserChange userChange = (UserChange) slackEvent;
+            users.put(userChange.user().id(), userChange.user());
+            return ImmutableUserChange.copyOf(userChange).withSlackSession(this);
+        }
+        if (slackEvent instanceof MessagePosted) {
+            return ImmutableMessagePosted.copyOf((MessagePosted)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof MessageUpdated) {
+            return ImmutableMessageUpdated.copyOf((MessageUpdated)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof MessageDeleted) {
+            return ImmutableMessageDeleted.copyOf((MessageDeleted)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelArchived) {
+            return ImmutableChannelArchived.copyOf((ChannelArchived)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelDeleted) {
+            return ImmutableChannelDeleted.copyOf((ChannelDeleted)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelRenamed) {
+            return ImmutableChannelRenamed.copyOf((ChannelRenamed)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelUnarchived) {
+            return ImmutableChannelUnarchived.copyOf((ChannelUnarchived)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelJoined) {
+            return ImmutableChannelJoined.copyOf((ChannelJoined)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ChannelLeft) {
+            return ImmutableChannelLeft.copyOf((ChannelLeft)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ReactionAdded) {
+            return ImmutableReactionAdded.copyOf((ReactionAdded)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof ReactionRemoved) {
+            return ImmutableReactionRemoved.copyOf((ReactionRemoved)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof PresenceChanged) {
+            return ImmutablePresenceChanged.copyOf((PresenceChanged)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof PinAdded) {
+            return ImmutablePinAdded.copyOf((PinAdded)slackEvent).withSlackSession(this);
+        }
+        if (slackEvent instanceof PinRemoved) {
+            return ImmutablePinRemoved.copyOf((PinRemoved)slackEvent).withSlackSession(this);
+        }
+
+        return slackEvent;
     }
 
     private JSONObject parseObject(String json) {

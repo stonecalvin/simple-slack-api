@@ -3,17 +3,21 @@ package com.ullink.slack.simpleslackapi.events;
 import com.ullink.slack.simpleslackapi.SlackFile;
 import com.ullink.slack.simpleslackapi.json.Channel;
 import com.ullink.slack.simpleslackapi.json.User;
+import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
 import java.util.Optional;
 
+@Gson.TypeAdapters
 @Value.Immutable
-public interface PinRemoved extends SlackEvent {
-    User sender();
-    Channel channel();
-    String timestamp();
-    String message();
+public abstract class PinRemoved extends SlackEvent {
+    public static final String type = "pin_removed";
 
-    Optional<SlackFile> file();
+    public abstract User sender();
+    public abstract Channel channel();
+    public abstract String timestamp();
+    public abstract String message();
+
+    public abstract Optional<SlackFile> file();
 
 }

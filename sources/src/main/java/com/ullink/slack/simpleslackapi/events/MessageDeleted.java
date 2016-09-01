@@ -1,10 +1,14 @@
 package com.ullink.slack.simpleslackapi.events;
 
-import com.ullink.slack.simpleslackapi.json.Channel;
+import com.google.gson.annotations.SerializedName;
+import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
+@Gson.TypeAdapters
 @Value.Immutable
-public interface MessageDeleted extends MessageEvent {
-    Channel channel();
-    String deletedTimestamp();
+public abstract class MessageDeleted extends MessageEvent {
+    public static final String type = "message_deleted";
+
+    @SerializedName("deleted_ts") public abstract String deletedTimestamp();
+
 }

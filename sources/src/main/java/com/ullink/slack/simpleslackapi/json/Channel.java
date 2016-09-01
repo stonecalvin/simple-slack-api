@@ -33,8 +33,8 @@ public interface Channel {
     Optional<Long> created();
     Optional<String> name();
     Optional<String> creator();
-    Optional<String> topic();
-    Optional<String> purpose();
+    Optional<Topic> topic();
+    Optional<Topic> purpose();
 
     @Value.Default
     @SerializedName("has_pins") default boolean hasPins() {

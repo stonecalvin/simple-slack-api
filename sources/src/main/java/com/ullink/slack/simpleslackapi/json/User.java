@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Gson.TypeAdapters
@@ -58,4 +59,6 @@ public interface User {
     }
 
     Optional<Profile> profile();
+
+    Optional<Map<String, ?>> prefs();
 }
