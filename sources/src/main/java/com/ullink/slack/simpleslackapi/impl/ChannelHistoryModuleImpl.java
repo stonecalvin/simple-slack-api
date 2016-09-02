@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.ullink.slack.simpleslackapi.ChannelHistoryModule;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
+import com.ullink.slack.simpleslackapi.events.ImmutableMessagePosted;
 import com.ullink.slack.simpleslackapi.events.MessagePosted;
 import com.ullink.slack.simpleslackapi.events.ReactionAdded;
 import com.ullink.slack.simpleslackapi.events.ReactionRemoved;
@@ -83,7 +84,11 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         if (events != null) {
             for (Object event : events) {
                 if ((((JSONObject) event).get("subtype") == null)) {
-                    messages.add((MessagePosted) SlackJSONMessageParser.decode(session, (JSONObject) event));
+                    String jsonStr = ((JSONObject) event).toJSONString();
+
+                    messages.add(ImmutableMessagePosted
+                            .copyOf(session.getGson().fromJson(jsonStr, MessagePosted.class))
+                            .withSlackSession(session));
                 }
             }
         }

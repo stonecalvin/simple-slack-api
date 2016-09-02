@@ -5,6 +5,9 @@ import org.json.simple.JSONObject;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.replies.SlackChannelReply;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class SlackJSONReplyParser {
     static ParsedSlackReply decode(JSONObject obj, SlackSession session)
     {
@@ -28,7 +31,7 @@ class SlackJSONReplyParser {
 
         if (isEmojiReply(obj)) {
             String timestamp = (String) obj.get("cache_ts");
-            return new SlackEmojiReplyImpl(ok, error, SlackJSONMessageParser.extractEmojisFromMessageJSON((JSONObject) obj.get("emoji")), timestamp);
+            return new SlackEmojiReplyImpl(ok, error, extractEmojisFromMessageJSON((JSONObject) obj.get("emoji")), timestamp);
         }
 
         if (ok == null) {
@@ -36,6 +39,17 @@ class SlackJSONReplyParser {
             ok = Boolean.FALSE;
         }
         return new SlackReplyImpl(ok,error);
+    }
+
+    private static Map<String, String> extractEmojisFromMessageJSON(JSONObject object) {
+        Map<String, String> emojis = new HashMap<>();
+
+        for (Object o : object.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
+            emojis.put(entry.getKey().toString(), entry.getValue().toString());
+        }
+
+        return emojis;
     }
 
     private static SlackChannelReply buildSlackChannelReply(Boolean ok, String error, JSONObject obj, SlackSession session) {
@@ -57,7 +71,7 @@ class SlackJSONReplyParser {
     {
         return obj.get("ts") != null;
     }
-    
+
     private static boolean isMpim(JSONObject obj) {
         Boolean isMpim = (Boolean)obj.get("is_mpim");
         return isMpim != null && isMpim.equals(Boolean.TRUE);

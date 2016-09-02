@@ -1,7 +1,11 @@
 package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.eventbus.EventBus;
-import com.ullink.slack.simpleslackapi.*;
+import com.google.gson.Gson;
+import com.ullink.slack.simpleslackapi.SlackAttachment;
+import com.ullink.slack.simpleslackapi.SlackMessageHandle;
+import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
+import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.SlackMessageReply;
 
@@ -15,11 +19,17 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     protected Map<String, Integration> integrations = new HashMap<>();
     protected User sessionPersona;
     protected Team team;
+    protected Gson gson;
 
     protected EventBus eventBus = new EventBus("SlackJavaApiEventBus");
 
     static final SlackChatConfiguration DEFAULT_CONFIGURATION = SlackChatConfiguration.getConfiguration().asUser();
     static final boolean DEFAULT_UNFURL = true;
+
+    @Override
+    public Gson getGson() {
+        return gson;
+    }
 
     @Override
     public Team getTeam()

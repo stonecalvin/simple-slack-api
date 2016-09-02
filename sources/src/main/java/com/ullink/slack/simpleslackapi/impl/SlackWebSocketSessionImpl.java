@@ -1,7 +1,6 @@
 package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
@@ -90,8 +89,6 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
 
     private Thread connectionMonitoringThread;
     private long heartbeat;
-
-    private Gson gson;
 
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -307,7 +304,6 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
         }
     }
 
-    // Potential infinite loop? May want to force a break eventually.
     private void stopConnectionMonitoring() {
         if (connectionMonitoringThread != null) {
             while (true) {

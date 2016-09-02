@@ -1,5 +1,6 @@
 package com.ullink.slack.simpleslackapi;
 
+import com.google.gson.Gson;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
 import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.*;
@@ -13,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 public interface SlackSession {
     void registerListener(Object listener);
     void unregisterListener(Object listener);
+
+    Gson getGson();
 
     Team getTeam();
 
