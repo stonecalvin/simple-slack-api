@@ -67,7 +67,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+        public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
             return null;
         }
 
@@ -154,12 +154,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle sendMessageToUser(User user, String message, SlackAttachment attachment) {
+        public SlackMessageHandle sendMessageToUser(User user, String message, MyAttachment attachment) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
-        public SlackMessageHandle sendMessageToUser(String userName, String message, SlackAttachment attachment) {
+        public SlackMessageHandle sendMessageToUser(String userName, String message, MyAttachment attachment) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 

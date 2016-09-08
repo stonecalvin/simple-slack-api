@@ -1,6 +1,9 @@
 package actions;
 
-import com.ullink.slack.simpleslackapi.*;
+import com.ullink.slack.simpleslackapi.ImmutableMyPreparedMessage;
+import com.ullink.slack.simpleslackapi.MyPreparedMessage;
+import com.ullink.slack.simpleslackapi.SlackMessageHandle;
+import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.json.Channel;
 import com.ullink.slack.simpleslackapi.json.User;
 import com.ullink.slack.simpleslackapi.replies.SlackChannelReply;
@@ -104,11 +107,9 @@ public class SendingMessages
         }
 
         //build a message object
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage("Hey, this is a message")
-                .withUnfurl(false)
-                .addAttachment(new SlackAttachment())
-                .addAttachment(new SlackAttachment())
+        MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
+                .message("Hey, this is a message")
+                .unfurl(true)
                 .build();
 
         session.sendMessage(channel.get(), preparedMessage);

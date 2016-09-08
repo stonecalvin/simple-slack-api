@@ -7,8 +7,14 @@ public class TestUtils {
         return ImmutableChannel.builder()
                 .id("channelid" + identifier)
                 .name("testchannel" + identifier)
-                .topic("topicchannel" + identifier)
-                .purpose("topicchannel" + identifier)
+                .topic(ImmutableTopic.builder()
+                        .value("topicchannel" + identifier)
+                        .lastSet(0)
+                        .build())
+                .purpose(ImmutableTopic.builder()
+                        .value("purpose" + identifier)
+                        .lastSet(0)
+                        .build())
                 .build();
     }
 

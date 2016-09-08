@@ -3,9 +3,9 @@ package com.ullink.slack.simpleslackapi.impl;
 import com.google.common.io.CharStreams;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
-import com.ullink.slack.simpleslackapi.SlackAttachment;
+import com.google.gson.reflect.TypeToken;
+import com.ullink.slack.simpleslackapi.MyPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
-import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.events.*;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration.Avatar;
@@ -340,13 +340,13 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessageToUser(User user, String message, SlackAttachment attachment) {
+    public SlackMessageHandle<SlackMessageReply> sendMessageToUser(User user, String message, MyAttachment attachment) {
         Channel iMChannel = getIMChannelForUser(user);
         return sendMessage(iMChannel, message, attachment, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessageToUser(String userName, String message, SlackAttachment attachment) {
+    public SlackMessageHandle<SlackMessageReply> sendMessageToUser(String userName, String message, MyAttachment attachment) {
         Optional<User> user = findUserByUserName(userName);
 
         if (!user.isPresent()) {
@@ -360,12 +360,12 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
         SlackMessageHandleImpl<SlackMessageReply> handle = new SlackMessageHandleImpl<>(getNextMessageId());
         Map<String, String> arguments = new HashMap<>();
         arguments.put("token", authToken);
         arguments.put("channel", channel.id());
-        arguments.put("text", preparedMessage.getMessage());
+        arguments.put("text", preparedMessage.message());
         if (chatConfiguration.asUser)
         {
             arguments.put("as_user", "true");
@@ -382,17 +382,17 @@ class SlackWebSocketSessionImpl extends AbstractSlackSessionImpl implements Slac
         {
             arguments.put("username", chatConfiguration.userName);
         }
-        if (preparedMessage.getAttachments() != null && preparedMessage.getAttachments().length > 0)
+        if (preparedMessage.attachments().isPresent())
         {
-            arguments.put("attachments", SlackJSONAttachmentFormatter
-                    .encodeAttachments(preparedMessage.getAttachments()).toString());
+            arguments.put("attachments", gson.toJson(preparedMessage.attachments().get(),
+                    new TypeToken<ArrayList<MyAttachment>>() {}.getType()));
         }
-        if (!preparedMessage.isUnfurl())
+        if (preparedMessage.unfurl().isPresent() && !preparedMessage.unfurl().get())
         {
             arguments.put("unfurl_links", "false");
             arguments.put("unfurl_media", "false");
         }
-        if (preparedMessage.isLinkNames())
+        if (preparedMessage.linkNames().isPresent() && preparedMessage.linkNames().get())
         {
             arguments.put("link_names", "1");
         }

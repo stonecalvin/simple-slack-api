@@ -57,17 +57,17 @@ public interface SlackSession {
 
     SlackMessageHandle<SlackMessageReply> deleteMessage(String timestamp, Channel channel);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, boolean unfurl);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, boolean unfurl);
 
-    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment);
+    SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment);
 
     SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, boolean unfurl);
 
@@ -75,9 +75,9 @@ public interface SlackSession {
 
     SlackMessageHandle<SlackMessageReply> sendFile(Channel channel, byte [] data, String fileName);
 
-    SlackMessageHandle<SlackMessageReply> sendMessageToUser(User user, String message, SlackAttachment attachment);
+    SlackMessageHandle<SlackMessageReply> sendMessageToUser(User user, String message, MyAttachment attachment);
 
-    SlackMessageHandle<SlackMessageReply> sendMessageToUser(String userName, String message, SlackAttachment attachment);
+    SlackMessageHandle<SlackMessageReply> sendMessageToUser(String userName, String message, MyAttachment attachment);
 
     SlackMessageHandle<SlackMessageReply> updateMessage(String timestamp, Channel channel, String message);
 

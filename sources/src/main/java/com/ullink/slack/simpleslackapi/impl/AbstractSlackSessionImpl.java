@@ -2,10 +2,7 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
-import com.ullink.slack.simpleslackapi.SlackAttachment;
-import com.ullink.slack.simpleslackapi.SlackMessageHandle;
-import com.ullink.slack.simpleslackapi.SlackPreparedMessage;
-import com.ullink.slack.simpleslackapi.SlackSession;
+import com.ullink.slack.simpleslackapi.*;
 import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.SlackMessageReply;
 
@@ -120,7 +117,7 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment)
     {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION);
     }
@@ -134,37 +131,38 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     @Override
     public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, boolean unfurl)
     {
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage(message)
-                .withUnfurl(unfurl)
+        MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
+                .message(message)
+                .unfurl(unfurl)
                 .build();
+
         return sendMessage(channel, preparedMessage, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, boolean unfurl)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, boolean unfurl)
     {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION, unfurl);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration)
     {
         return sendMessage(channel, message, attachment, chatConfiguration, DEFAULT_UNFURL);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, SlackPreparedMessage preparedMessage) {
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage) {
         return sendMessage(channel, preparedMessage, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, SlackAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
+    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
     {
-        SlackPreparedMessage preparedMessage = new SlackPreparedMessage.Builder()
-                .withMessage(message)
-                .withUnfurl(unfurl)
-                .addAttachment(attachment)
+        MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
+                .message(message)
+                .unfurl(unfurl)
+                .attachments(Collections.singletonList(attachment))
                 .build();
 
         return sendMessage(channel, preparedMessage, chatConfiguration);

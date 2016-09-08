@@ -1,7 +1,6 @@
 package com.ullink.slack.simpleslackapi.events;
 
 import com.google.gson.annotations.SerializedName;
-import com.sun.istack.internal.Nullable;
 import com.ullink.slack.simpleslackapi.json.MyAttachment;
 import com.ullink.slack.simpleslackapi.json.MyFile;
 import com.ullink.slack.simpleslackapi.json.User;
@@ -9,6 +8,7 @@ import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 import org.json.simple.JSONObject;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
