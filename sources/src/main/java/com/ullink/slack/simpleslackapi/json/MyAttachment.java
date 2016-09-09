@@ -1,8 +1,6 @@
 package com.ullink.slack.simpleslackapi.json;
 
 import com.google.gson.annotations.SerializedName;
-import com.ullink.slack.simpleslackapi.SlackAction;
-import com.ullink.slack.simpleslackapi.SlackField;
 import org.immutables.gson.Gson;
 import org.immutables.value.Value;
 
@@ -32,7 +30,7 @@ public interface MyAttachment {
     @SerializedName("image_url") Optional<String> imageUrl();
 
     Map<String, String> miscRootFields();
-    List<SlackField> fields();
-    List<SlackAction> actions();
+    List<MyField> fields();
+    List<MyAction> actions();
     List<String> markdown_in();
 }

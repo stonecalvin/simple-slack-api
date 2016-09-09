@@ -1,7 +1,7 @@
 package com.ullink.slack.simpleslackapi.events;
 
-import com.ullink.slack.simpleslackapi.SlackFile;
 import com.ullink.slack.simpleslackapi.json.Channel;
+import com.ullink.slack.simpleslackapi.json.MyFile;
 import com.ullink.slack.simpleslackapi.json.User;
 import org.immutables.gson.Gson;
 import org.immutables.value.Value;
@@ -18,6 +18,6 @@ public abstract class PinRemoved extends SlackEvent {
     public abstract String timestamp();
     public abstract String message();
 
-    public abstract Optional<SlackFile> file();
+    public abstract Optional<MyFile> file();
 
 }

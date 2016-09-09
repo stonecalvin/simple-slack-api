@@ -6,7 +6,7 @@ import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.json.Channel;
 import com.ullink.slack.simpleslackapi.json.User;
-import com.ullink.slack.simpleslackapi.replies.SlackChannelReply;
+import com.ullink.slack.simpleslackapi.replies.MyParsedReply;
 
 import java.util.Optional;
 
@@ -63,10 +63,10 @@ public class SendingMessages
         }
 
         //get its direct message channel
-        SlackMessageHandle<SlackChannelReply> reply = session.openDirectMessageChannel(user.get());
+        SlackMessageHandle<MyParsedReply> reply = session.openDirectMessageChannel(user.get());
 
         //get the channel
-        Channel channel = reply.getReply().getSlackChannel();
+        Channel channel = reply.getReply().channel().get();
 
         //send the message to this channel
         session.sendMessage(channel, "Hi, how are you", null);
@@ -84,10 +84,10 @@ public class SendingMessages
         User agentsmith = session.findUserByUserName("agentsmith").get();
 
         //open a multiparty direct message channel between the bot and these users
-        SlackMessageHandle<SlackChannelReply> reply = session.openMultipartyDirectMessageChannel(killroy, janedoe, agentsmith);
+        SlackMessageHandle<MyParsedReply> reply = session.openMultipartyDirectMessageChannel(killroy, janedoe, agentsmith);
 
         //get the channel
-        Channel channel = reply.getReply().getSlackChannel();
+        Channel channel = reply.getReply().channel().get();
 
         //send the message to this channel
         session.sendMessage(channel, "Hi, how are you guys", null);

@@ -51,7 +51,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendTyping(Channel channel) {
+        public SlackMessageHandle<MyParsedReply> sendTyping(Channel channel) {
            return null;
         }
 
@@ -67,12 +67,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+        public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackMessageReply> sendFile(Channel channel, byte[] data, String fileName)
+        public SlackMessageHandle<MyParsedReply> sendFile(Channel channel, byte[] data, String fileName)
         {
             return null;
         }
@@ -96,7 +96,7 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> setChannelTopic(Channel channel, String topic) {
+        public SlackMessageHandle<MyParsedReply> setChannelTopic(Channel channel, String topic) {
             return null;
         }
 
@@ -107,19 +107,19 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> openDirectMessageChannel(User user)
+        public SlackMessageHandle<MyParsedReply> openDirectMessageChannel(User user)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> openMultipartyDirectMessageChannel(User... users)
+        public SlackMessageHandle<MyParsedReply> openMultipartyDirectMessageChannel(User... users)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<EmojiSlackReply> listEmoji() {
+        public SlackMessageHandle<MyParsedReply> listEmoji() {
             return null;
         }
 
@@ -138,12 +138,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<SlackChannelReply> inviteToChannel(Channel channel, User user) {
+        public SlackMessageHandle<MyParsedReply> inviteToChannel(Channel channel, User user) {
           return null;
         }
 
         @Override
-        public SlackMessageHandle<ParsedSlackReply> archiveChannel(Channel channel)
+        public SlackMessageHandle<MyParsedReply> archiveChannel(Channel channel)
         {
           return null;
         }

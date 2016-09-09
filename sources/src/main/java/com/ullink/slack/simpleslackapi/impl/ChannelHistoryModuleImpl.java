@@ -78,7 +78,7 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
     private List<MessagePosted> fetchHistoryOfChannel(Map<String, String> params, String command) {
         SlackMessageHandle<GenericSlackReply> handle = session.postGenericSlackCommand(params, command);
         GenericSlackReply replyEv = handle.getReply();
-        JSONObject answer = replyEv.getPlainAnswer();
+        JSONObject answer = replyEv.plainAnswer();
         JSONArray events = (JSONArray) answer.get("messages");
         List<MessagePosted> messages = new ArrayList<>();
         if (events != null) {

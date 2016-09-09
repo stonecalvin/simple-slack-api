@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,8 +45,7 @@ public class TestSlackJSONSessionStatusParser
                 .collect(Collectors.toMap(User::id, Function.identity()));
         Map<String, Integration> integrations = session.bots().stream()
                 .collect(Collectors.toMap(Integration::id, Function.identity()));
-        Map<String, Channel> channels = Stream.concat(session.channels().stream(), session.groups().stream())
-                .collect(Collectors.toMap(Channel::id, Function.identity()));
+        Map<String, Channel> channels = session.channelMap();
 
         assertThat(channels).containsOnlyKeys("CHANNELID1", "CHANNELID2", "CHANNELID3", "GROUPID1", "DIM01");
         assertThat(users).containsOnlyKeys("USERID1","USERID2","USERID3","USERID4","BOTID1","BOTID2");

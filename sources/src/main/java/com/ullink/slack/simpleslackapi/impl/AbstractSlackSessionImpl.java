@@ -4,12 +4,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
 import com.ullink.slack.simpleslackapi.*;
 import com.ullink.slack.simpleslackapi.json.*;
-import com.ullink.slack.simpleslackapi.replies.SlackMessageReply;
+import com.ullink.slack.simpleslackapi.replies.MyParsedReply;
 
 import java.util.*;
 
-abstract class AbstractSlackSessionImpl implements SlackSession
-{
+abstract class AbstractSlackSessionImpl implements SlackSession {
 
     protected Map<String, Channel> channels = new HashMap<>();
     protected Map<String, User> users = new HashMap<>();
@@ -29,20 +28,17 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public Team getTeam()
-    {
+    public Team getTeam() {
         return team;
     }
 
     @Override
-    public Collection<Channel> getChannels()
-    {
+    public Collection<Channel> getChannels() {
         return new ArrayList<>(channels.values());
     }
 
     @Override
-    public Collection<User> getUsers()
-    {
+    public Collection<User> getUsers() {
         return new ArrayList<>(users.values());
     }
 
@@ -51,7 +47,7 @@ abstract class AbstractSlackSessionImpl implements SlackSession
         return new ArrayList<>(integrations.values());
     }
 
-     @Override
+    @Override
     public Optional<Channel> findChannelByName(String channelName) {
         return channels.values().stream()
                 .filter(channel -> channel.name().isPresent())
@@ -60,14 +56,11 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public Channel findChannelById(String channelId)
-    {
+    public Channel findChannelById(String channelId) {
         Channel toReturn = channels.get(channelId);
-        if (toReturn == null)
-        {
+        if (toReturn == null) {
             // direct channel case
-            if (channelId != null && channelId.startsWith("D"))
-            {
+            if (channelId != null && channelId.startsWith("D")) {
                 toReturn = ImmutableChannel.builder()
                         .isIm(true)
                         .id(channelId)
@@ -78,8 +71,7 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public User findUserById(String userId)
-    {
+    public User findUserById(String userId) {
         return users.get(userId);
     }
 
@@ -100,37 +92,32 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     public Optional<User> findUserByEmail(String userMail) {
         return users.values().stream()
                 .filter(user -> user.profile().isPresent())
-                .filter(user -> userMail.equals(user.profile().get().email()))
+                .filter(user -> userMail.equals(user.profile().get().email().get()))
                 .findFirst();
     }
 
     @Override
-    public Integration findIntegrationById(String integrationId)
-    {
+    public Integration findIntegrationById(String integrationId) {
         return integrations.get(integrationId);
     }
 
     @Override
-    public User sessionPersona()
-    {
+    public User sessionPersona() {
         return sessionPersona;
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment)
-    {
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message, MyAttachment attachment) {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message)
-    {
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message) {
         return sendMessage(channel, message, DEFAULT_UNFURL);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, boolean unfurl)
-    {
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message, boolean unfurl) {
         MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
                 .message(message)
                 .unfurl(unfurl)
@@ -140,24 +127,22 @@ abstract class AbstractSlackSessionImpl implements SlackSession
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, boolean unfurl)
-    {
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message, MyAttachment attachment, boolean unfurl) {
         return sendMessage(channel, message, attachment, DEFAULT_CONFIGURATION, unfurl);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration)
-    {
-        return sendMessage(channel, message, attachment, chatConfiguration, DEFAULT_UNFURL);
-    }
-
-    @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage) {
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage) {
         return sendMessage(channel, preparedMessage, DEFAULT_CONFIGURATION);
     }
 
     @Override
-    public SlackMessageHandle<SlackMessageReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration) {
+        return sendMessage(channel, message, attachment, chatConfiguration, false);
+    }
+
+    @Override
+    public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, String message, MyAttachment attachment, SlackChatConfiguration chatConfiguration, boolean unfurl)
     {
         MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
                 .message(message)
