@@ -13,23 +13,23 @@ import java.util.Map;
 public class EventTypeDeserializer implements JsonDeserializer<SlackEvent> {
     private final static Map<String, Class<?>> EVENT_MAP = new HashMap<>();
     static {
-        EVENT_MAP.put(MessageEvent.type, MessagePosted.class);
-        EVENT_MAP.put(MessageUpdated.type, MessageUpdated.class);
-        EVENT_MAP.put(MessageDeleted.type, MessageDeleted.class);
+        EVENT_MAP.put(SlackMessageEvent.type, SlackMessagePosted.class);
+        EVENT_MAP.put(SlackMessageUpdated.type, SlackMessageUpdated.class);
+        EVENT_MAP.put(SlackMessageDeleted.type, SlackMessageDeleted.class);
 
-        EVENT_MAP.put(ChannelCreated.type, ChannelCreated.class);
-        EVENT_MAP.put(ChannelArchived.type, ChannelArchived.class);
-        EVENT_MAP.put(ChannelDeleted.type, ChannelDeleted.class);
-        EVENT_MAP.put(ChannelRenamed.type, ChannelRenamed.class);
-        EVENT_MAP.put(ChannelUnarchived.type, ChannelUnarchived.class);
-        EVENT_MAP.put(ChannelJoined.type, ChannelJoined.class);
-        EVENT_MAP.put(ChannelLeft.type, ChannelLeft.class);
+        EVENT_MAP.put(SlackChannelCreated.type, SlackChannelCreated.class);
+        EVENT_MAP.put(SlackChannelArchived.type, SlackChannelArchived.class);
+        EVENT_MAP.put(SlackChannelDeleted.type, SlackChannelDeleted.class);
+        EVENT_MAP.put(SlackChannelRenamed.type, SlackChannelRenamed.class);
+        EVENT_MAP.put(SlackChannelUnarchived.type, SlackChannelUnarchived.class);
+        EVENT_MAP.put(SlackChannelJoined.type, SlackChannelJoined.class);
+        EVENT_MAP.put(SlackChannelLeft.type, SlackChannelLeft.class);
 
-        EVENT_MAP.put(GroupJoined.type, GroupJoined.class);
+        EVENT_MAP.put(SlackGroupJoined.type, SlackGroupJoined.class);
         EVENT_MAP.put(ReactionAdded.type, ReactionAdded.class);
         EVENT_MAP.put(ReactionRemoved.type, ReactionRemoved.class);
         EVENT_MAP.put(UserChange.type, UserChange.class);
-        EVENT_MAP.put(PresenceChanged.type, PresenceChanged.class);
+        EVENT_MAP.put(PresenceChange.type, PresenceChange.class);
         EVENT_MAP.put(PinAdded.type, PinAdded.class);
         EVENT_MAP.put(PinRemoved.type, PinRemoved.class);
     }
@@ -46,11 +46,11 @@ public class EventTypeDeserializer implements JsonDeserializer<SlackEvent> {
             return ImmutableUnknownEvent.builder().build();
         }
 
-        if (MessageEvent.type.equals(type)) {
+        if (SlackMessageEvent.type.equals(type)) {
             JsonElement jsonSubtype = jsonObject.get("subtype");
 
             // Only use a message subtype that we have explicitly added to the map.
-            // If this encounters an unregistered subtype, it'll use the default of MessagePosted
+            // If this encounters an unregistered subtype, it'll use the default of SlackMessagePosted
             if (jsonSubtype != null && EVENT_MAP.containsKey(jsonSubtype.getAsString())) {
                 type = jsonSubtype.getAsString();
             }

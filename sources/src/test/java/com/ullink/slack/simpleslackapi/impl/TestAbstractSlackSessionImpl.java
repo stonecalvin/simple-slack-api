@@ -1,7 +1,6 @@
 package com.ullink.slack.simpleslackapi.impl;
 
 import com.ullink.slack.simpleslackapi.*;
-import com.ullink.slack.simpleslackapi.json.*;
 import com.ullink.slack.simpleslackapi.replies.*;
 import org.junit.Test;
 
@@ -17,7 +16,7 @@ public class TestAbstractSlackSessionImpl
 
 
         @Override
-        public void setPresence(Presence presence) {
+        public void setPresence(PresenceEnum presenceEnum) {
         }
         @Override
         public void connect()
@@ -45,46 +44,46 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle sendMessageOverWebSocket(Channel channel, String message)
+        public SlackMessageHandle sendMessageOverWebSocket(SlackChannel channel, String message)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> sendTyping(Channel channel) {
+        public SlackMessageHandle<SlackParsedReply> sendTyping(SlackChannel channel) {
            return null;
         }
 
         @Override
-        public Presence getPresence(User persona) {
+        public PresenceEnum getPresence(SlackUser persona) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle deleteMessage(String timestamp, Channel channel)
+        public SlackMessageHandle deleteMessage(String timestamp, SlackChannel channel)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> sendMessage(Channel channel, MyPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
+        public SlackMessageHandle<SlackParsedReply> sendMessage(SlackChannel channel, SlackPreparedMessage preparedMessage, SlackChatConfiguration chatConfiguration) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> sendFile(Channel channel, byte[] data, String fileName)
+        public SlackMessageHandle<SlackParsedReply> sendFile(SlackChannel channel, byte[] data, String fileName)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle updateMessage(String timestamp, Channel channel, String message)
+        public SlackMessageHandle updateMessage(String timestamp, SlackChannel channel, String message)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle addReactionToMessage(Channel channel, String messageTimeStamp, String emojiCode)
+        public SlackMessageHandle addReactionToMessage(SlackChannel channel, String messageTimeStamp, String emojiCode)
         {
             return null;
         }
@@ -96,30 +95,30 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> setChannelTopic(Channel channel, String topic) {
+        public SlackMessageHandle<SlackParsedReply> setChannelTopic(SlackChannel channel, String topic) {
             return null;
         }
 
         @Override
-        public SlackMessageHandle leaveChannel(Channel channel)
+        public SlackMessageHandle leaveChannel(SlackChannel channel)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> openDirectMessageChannel(User user)
+        public SlackMessageHandle<SlackParsedReply> openDirectMessageChannel(SlackUser slackUser)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> openMultipartyDirectMessageChannel(User... users)
+        public SlackMessageHandle<SlackParsedReply> openMultipartyDirectMessageChannel(SlackUser... slackUsers)
         {
             return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> listEmoji() {
+        public SlackMessageHandle<SlackParsedReply> listEmoji() {
             return null;
         }
 
@@ -138,12 +137,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> inviteToChannel(Channel channel, User user) {
+        public SlackMessageHandle<SlackParsedReply> inviteToChannel(SlackChannel channel, SlackUser slackUser) {
           return null;
         }
 
         @Override
-        public SlackMessageHandle<MyParsedReply> archiveChannel(Channel channel)
+        public SlackMessageHandle<SlackParsedReply> archiveChannel(SlackChannel channel)
         {
           return null;
         }
@@ -154,12 +153,12 @@ public class TestAbstractSlackSessionImpl
         }
 
         @Override
-        public SlackMessageHandle sendMessageToUser(User user, String message, MyAttachment attachment) {
+        public SlackMessageHandle sendMessageToUser(SlackUser slackUser, String message, SlackAttachment attachment) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
-        public SlackMessageHandle sendMessageToUser(String userName, String message, MyAttachment attachment) {
+        public SlackMessageHandle sendMessageToUser(String userName, String message, SlackAttachment attachment) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
@@ -181,9 +180,9 @@ public class TestAbstractSlackSessionImpl
 
         slackSession.connect();
 
-        Optional<Channel> channel = slackSession.findChannelByName("testchannel1");
+        Optional<SlackChannel> channel = slackSession.findChannelByName("testchannel1");
         assertThat(channel.isPresent()).isTrue();
-        assertThat(channel.get().id()).isEqualTo("channelid1");
+        assertThat(channel.get().getId()).isEqualTo("channelid1");
     }
 
     @Test
@@ -204,8 +203,8 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findChannelById("channelid1")).isNotNull();
-        assertThat(slackSession.findChannelById("channelid1").name().isPresent()).isTrue();
-        assertThat(slackSession.findChannelById("channelid1").name().get()).isEqualTo("testchannel1");
+        assertThat(slackSession.findChannelById("channelid1").getName().isPresent()).isTrue();
+        assertThat(slackSession.findChannelById("channelid1").getName().get()).isEqualTo("testchannel1");
     }
 
     @Test
@@ -226,7 +225,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findBotById("botid1")).isNotNull();
-        assertThat(slackSession.findBotById("botid1").name()).isEqualTo("botname1");
+        assertThat(slackSession.findBotById("botid1").getName()).isEqualTo("botname1");
     }
 
     @Test
@@ -247,7 +246,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findUserById("userid1")).isNotNull();
-        assertThat(slackSession.findUserById("userid1").name()).isEqualTo("username1");
+        assertThat(slackSession.findUserById("userid1").getName()).isEqualTo("username1");
     }
 
     @Test
@@ -268,7 +267,7 @@ public class TestAbstractSlackSessionImpl
         slackSession.connect();
 
         assertThat(slackSession.findUserByUserName("username1").isPresent()).isTrue();
-        assertThat(slackSession.findUserByUserName("username1").get().id()).isEqualTo("userid1");
+        assertThat(slackSession.findUserByUserName("username1").get().getId()).isEqualTo("userid1");
     }
 
     @Test

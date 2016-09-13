@@ -6,8 +6,7 @@ import org.immutables.value.Value;
 
 @Gson.TypeAdapters
 @Value.Immutable
-public abstract class UserChange extends SlackEvent {
-    public static final String type = "user_change";
-
+public abstract class SlackChannelUnarchived extends SlackChannelEvent {
+    public static final String type = "channel_unarchive";
     public abstract SlackUser getUser();
 }

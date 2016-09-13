@@ -2,9 +2,9 @@ package com.ullink.slack.simpleslackapi.impl;
 
 public class SlackChatConfiguration
 {
-    static enum Avatar
+    enum Avatar
     {
-        DEFAULT, EMOJI, ICON_URL;
+        DEFAULT, EMOJI, ICON_URL
     }
 
     protected boolean asUser;

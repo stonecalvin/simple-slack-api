@@ -5,5 +5,5 @@ import org.json.simple.JSONObject;
 
 @Value.Immutable
 public interface GenericSlackReply extends SlackReply {
-    JSONObject plainAnswer();
+    JSONObject getPlainAnswer();
 }

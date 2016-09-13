@@ -1,12 +1,9 @@
 package actions;
 
-import com.ullink.slack.simpleslackapi.ImmutableMyPreparedMessage;
-import com.ullink.slack.simpleslackapi.MyPreparedMessage;
-import com.ullink.slack.simpleslackapi.SlackMessageHandle;
-import com.ullink.slack.simpleslackapi.SlackSession;
-import com.ullink.slack.simpleslackapi.json.Channel;
-import com.ullink.slack.simpleslackapi.json.User;
-import com.ullink.slack.simpleslackapi.replies.MyParsedReply;
+import com.ullink.slack.simpleslackapi.*;
+import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.SlackUser;
+import com.ullink.slack.simpleslackapi.replies.SlackParsedReply;
 
 import java.util.Optional;
 
@@ -23,7 +20,7 @@ public class SendingMessages
     {
 
         //get a channel
-        Optional<Channel> channel = session.findChannelByName("achannel");
+        Optional<SlackChannel> channel = session.findChannelByName("achannel");
 
         if (channel.isPresent()) {
             session.sendMessage(channel.get(), "Hey there");
@@ -37,7 +34,7 @@ public class SendingMessages
     {
 
         //get a user
-        Optional<User> user = session.findUserByUserName("killroy");
+        Optional<SlackUser> user = session.findUserByUserName("killroy");
 
         if (!user.isPresent()) {
             // Could not find a user with the given name, do some sort of error handling
@@ -55,7 +52,7 @@ public class SendingMessages
     {
 
         //get a user
-        Optional<User> user = session.findUserByUserName("killroy");
+        Optional<SlackUser> user = session.findUserByUserName("killroy");
 
         if (!user.isPresent()) {
             // Could not find a user with the given name, do some sort of error handling
@@ -63,10 +60,10 @@ public class SendingMessages
         }
 
         //get its direct message channel
-        SlackMessageHandle<MyParsedReply> reply = session.openDirectMessageChannel(user.get());
+        SlackMessageHandle<SlackParsedReply> reply = session.openDirectMessageChannel(user.get());
 
         //get the channel
-        Channel channel = reply.getReply().channel().get();
+        SlackChannel channel = reply.getReply().getSlackChannel().get();
 
         //send the message to this channel
         session.sendMessage(channel, "Hi, how are you", null);
@@ -79,15 +76,15 @@ public class SendingMessages
     {
         //get some users
         // For this example, we will ignore the fact that these users may not actually exist.
-        User killroy = session.findUserByUserName("killroy").get();
-        User janedoe = session.findUserByUserName("janedoe").get();
-        User agentsmith = session.findUserByUserName("agentsmith").get();
+        SlackUser killroy = session.findUserByUserName("killroy").get();
+        SlackUser janedoe = session.findUserByUserName("janedoe").get();
+        SlackUser agentsmith = session.findUserByUserName("agentsmith").get();
 
         //open a multiparty direct message channel between the bot and these users
-        SlackMessageHandle<MyParsedReply> reply = session.openMultipartyDirectMessageChannel(killroy, janedoe, agentsmith);
+        SlackMessageHandle<SlackParsedReply> reply = session.openMultipartyDirectMessageChannel(killroy, janedoe, agentsmith);
 
         //get the channel
-        Channel channel = reply.getReply().channel().get();
+        SlackChannel channel = reply.getReply().getSlackChannel().get();
 
         //send the message to this channel
         session.sendMessage(channel, "Hi, how are you guys", null);
@@ -99,7 +96,7 @@ public class SendingMessages
     public void sendUsingPreparedMessage(SlackSession session)
     {
         //get a channel
-        Optional<Channel> channel = session.findChannelByName("achannel");
+        Optional<SlackChannel> channel = session.findChannelByName("achannel");
         if (!channel.isPresent()) {
             // We were unable to find a channel with the given name.
             // Some sort of error handling happens here
@@ -107,9 +104,9 @@ public class SendingMessages
         }
 
         //build a message object
-        MyPreparedMessage preparedMessage = ImmutableMyPreparedMessage.builder()
+        SlackPreparedMessage preparedMessage = ImmutableSlackPreparedMessage.builder()
                 .message("Hey, this is a message")
-                .unfurl(true)
+                .isUnfurl(true)
                 .build();
 
         session.sendMessage(channel.get(), preparedMessage);

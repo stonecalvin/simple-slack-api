@@ -2,13 +2,10 @@ package com.ullink.slack.simpleslackapi.impl;
 
 import com.google.common.eventbus.Subscribe;
 import com.ullink.slack.simpleslackapi.ChannelHistoryModule;
+import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackMessageHandle;
 import com.ullink.slack.simpleslackapi.SlackSession;
-import com.ullink.slack.simpleslackapi.events.ImmutableMessagePosted;
-import com.ullink.slack.simpleslackapi.events.MessagePosted;
-import com.ullink.slack.simpleslackapi.events.ReactionAdded;
-import com.ullink.slack.simpleslackapi.events.ReactionRemoved;
-import com.ullink.slack.simpleslackapi.json.Channel;
+import com.ullink.slack.simpleslackapi.events.*;
 import com.ullink.slack.simpleslackapi.replies.GenericSlackReply;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -35,22 +32,22 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
     }
 
     @Override
-    public List<MessagePosted> fetchHistoryOfChannel(String channelId) {
+    public List<SlackMessagePosted> fetchHistoryOfChannel(String channelId) {
         return fetchHistoryOfChannel(channelId, null, -1);
     }
 
     @Override
-    public List<MessagePosted> fetchHistoryOfChannel(String channelId, LocalDate day) {
+    public List<SlackMessagePosted> fetchHistoryOfChannel(String channelId, LocalDate day) {
         return fetchHistoryOfChannel(channelId, day, -1);
     }
 
     @Override
-    public List<MessagePosted> fetchHistoryOfChannel(String channelId, int numberOfMessages) {
+    public List<SlackMessagePosted> fetchHistoryOfChannel(String channelId, int numberOfMessages) {
         return fetchHistoryOfChannel(channelId, null, numberOfMessages);
     }
 
     @Override
-    public List<MessagePosted> fetchHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages) {
+    public List<SlackMessagePosted> fetchHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages) {
         Map<String, String> params = new HashMap<>();
         params.put("channel", channelId);
         if (day != null) {
@@ -64,8 +61,8 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         } else {
             params.put("count", String.valueOf(DEFAULT_HISTORY_FETCH_SIZE));
         }
-        Channel channel = session.findChannelById(channelId);
-        switch (channel.type()) {
+        SlackChannel channel = session.findChannelById(channelId);
+        switch (channel.getType()) {
             case INSTANT_MESSAGING:
                 return fetchHistoryOfChannel(params,FETCH_IM_HISTORY_COMMAND);
             case PRIVATE_GROUP:
@@ -75,19 +72,19 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         }
     }
 
-    private List<MessagePosted> fetchHistoryOfChannel(Map<String, String> params, String command) {
+    private List<SlackMessagePosted> fetchHistoryOfChannel(Map<String, String> params, String command) {
         SlackMessageHandle<GenericSlackReply> handle = session.postGenericSlackCommand(params, command);
         GenericSlackReply replyEv = handle.getReply();
-        JSONObject answer = replyEv.plainAnswer();
+        JSONObject answer = replyEv.getPlainAnswer();
         JSONArray events = (JSONArray) answer.get("messages");
-        List<MessagePosted> messages = new ArrayList<>();
+        List<SlackMessagePosted> messages = new ArrayList<>();
         if (events != null) {
             for (Object event : events) {
                 if ((((JSONObject) event).get("subtype") == null)) {
                     String jsonStr = ((JSONObject) event).toJSONString();
 
-                    messages.add(ImmutableMessagePosted
-                            .copyOf(session.getGson().fromJson(jsonStr, MessagePosted.class))
+                    messages.add(ImmutableSlackMessagePosted
+                            .copyOf(session.getGson().fromJson(jsonStr, SlackMessagePosted.class))
                             .withSlackSession(session));
                 }
             }
@@ -96,23 +93,23 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
     }
 
     @Override
-    public List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId) {
+    public List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId) {
         return fetchUpdatingHistoryOfChannel(channelId, null, -1);
     }
 
     @Override
-    public List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day) {
+    public List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day) {
         return fetchUpdatingHistoryOfChannel(channelId, day, -1);
     }
 
     @Override
-    public List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, int numberOfMessages) {
+    public List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, int numberOfMessages) {
         return fetchUpdatingHistoryOfChannel(channelId, null, numberOfMessages);
     }
 
     @Override
-    public List<MessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages) {
-        List<MessagePosted> messages = fetchHistoryOfChannel(channelId, day, numberOfMessages);
+    public List<SlackMessagePosted> fetchUpdatingHistoryOfChannel(String channelId, LocalDate day, int numberOfMessages) {
+        List<SlackMessagePosted> messages = fetchHistoryOfChannel(channelId, day, numberOfMessages);
 
         session.registerListener(new ChannelHistoryReactionAddedListener(messages));
         session.registerListener(new ChannelHistoryReactionRemovedListener(messages));
@@ -122,9 +119,9 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
 
     public class ChannelHistoryReactionAddedListener {
 
-        List<MessagePosted> messages = new ArrayList<>();
+        List<SlackMessagePosted> messages = new ArrayList<>();
 
-        public ChannelHistoryReactionAddedListener(List<MessagePosted> initialMessages) {
+        public ChannelHistoryReactionAddedListener(List<SlackMessagePosted> initialMessages) {
             messages = initialMessages;
         }
 
@@ -136,13 +133,13 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         // In my mind this is actually supposed to just add 1 to the emoji count of the "correct" message?
         @Subscribe
         public void onEvent(ReactionAdded event) {
-            String emojiName = event.reaction();
-            for (MessagePosted message : messages) {
-                if (!message.reactions().isPresent()) {
+            String emojiName = event.getReaction();
+            for (SlackMessagePosted message : messages) {
+                if (!message.getReactions().isPresent()) {
                     continue;
                 }
 
-                Map<String, Integer> reactions = message.reactions().get();
+                Map<String, Integer> reactions = message.getReactions().get();
                 for (String reaction : reactions.keySet()) {
                     if (emojiName.equals(reaction)) {
                         int count = reactions.get(emojiName);
@@ -153,13 +150,13 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
                 reactions.put(emojiName, 1);
             }
         }
-    };
+    }
 
     public class ChannelHistoryReactionRemovedListener {
 
-        List<MessagePosted> messages = new ArrayList<>();
+        List<SlackMessagePosted> messages = new ArrayList<>();
 
-        public ChannelHistoryReactionRemovedListener(List<MessagePosted> initialMessages) {
+        public ChannelHistoryReactionRemovedListener(List<SlackMessagePosted> initialMessages) {
             messages = initialMessages;
         }
 
@@ -168,14 +165,14 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
         // the correct message.
         @Subscribe
         public void onEvent(ReactionRemoved event) {
-            String emojiName = event.reaction();
+            String emojiName = event.getReaction();
 
-            for (MessagePosted message : messages) {
-                if (!message.reactions().isPresent()) {
+            for (SlackMessagePosted message : messages) {
+                if (!message.getReactions().isPresent()) {
                     continue;
                 }
 
-                Map<String, Integer> reactions = message.reactions().get();
+                Map<String, Integer> reactions = message.getReactions().get();
 
                 for (String reaction : reactions.keySet()) {
                     if (emojiName.equals(reaction)) {
@@ -194,14 +191,14 @@ public class ChannelHistoryModuleImpl implements ChannelHistoryModule {
 
     public class ChannelHistoryMessagePostedListener {
 
-        List<MessagePosted> messages = new ArrayList<>();
+        List<SlackMessagePosted> messages = new ArrayList<>();
 
-        public ChannelHistoryMessagePostedListener(List<MessagePosted> initialMessages) {
+        public ChannelHistoryMessagePostedListener(List<SlackMessagePosted> initialMessages) {
             messages = initialMessages;
         }
 
         @Subscribe
-        public void onEvent(MessagePosted event) {
+        public void onEvent(SlackMessagePosted event) {
             messages.add(event);
         }
     }
