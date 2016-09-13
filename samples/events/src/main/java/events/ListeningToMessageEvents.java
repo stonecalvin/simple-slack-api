@@ -33,7 +33,7 @@ public class ListeningToMessageEvents
         //add it to the session
         session.registerListener(new MessagePostedListener());
 
-        //that's it, the listener will get every getMessage post events the bot can get notified on
+        //that's it, the listener will get every message post events the bot can get notified on
         //(IE: the messages sent on channels it joined or sent directly to it)
     }
 
